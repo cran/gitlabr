@@ -19,11 +19,82 @@ repository <- function(req = c("tree")
   gitlab(proj_req(project, c("repository", req), ...), ...)
 }
 
+#' List, create and delete branches
+#' 
+#' @rdname branches
+#' @param project name or id of project (not repository!)
+#' @param verb is ignored, will always be forced to match the action the function name indicates
+#' @param ... passed on to \code{\link{gitlab}}
+#' @export
+list_branches <- function(project, verb = httr::GET, ...) {
+  gitlab(proj_req(project, c("repository", "branches"), ...), ...)
+}
+
+#' List, create and delete branches
+#' 
+#' @param branch_name name of branch to create/delete
+#' @param ref ref name of origin for newly created branch
+#' @rdname branches
+#' @export
+create_branch <- function(project, branch_name, ref = "master", verb = httr::POST, ...) {
+  gitlab(proj_req(project, c("repository", "branches"), ...),
+         verb = httr::POST,
+         branch_name = branch_name,
+         ref = ref,
+         auto_format = FALSE,
+         ...) %>%
+    as.data.frame()
+}
+
+#' List, create and delete branches
+#' 
+#' @rdname branches
+#' @export
+delete_branch <- function(project, branch_name, verb = httr::POST, ...) {
+  gitlab(proj_req(project, c("repository", "branches", branch_name), ...),
+         verb = httr::DELETE,
+         auto_format = FALSE,
+         ...) %>%
+    as.data.frame()
+}
+
+#' Create a merge request
+#' 
+#' @param project name or id of project (not repository!)
+#' @param source_branch name of branch to be merged
+#' @param target_branch name of branch into which to merge
+#' @param title title of the merge request
+#' @param description description text for the merge request
+#' @param verb is ignored, will always be forced to match the action the function name indicates
+#' @param ... passed on to \code{\link{gitlab}}. Might contain more fields documented in gitlab API doc.
+#' 
+#' @export
+create_merge_request <- function(project, source_branch, target_branch = "master", title, description, verb = httr::POST, ...) {
+  gitlab(req = proj_req(project = project, c("merge_requests"), ...),
+         source_branch = source_branch,
+         target_branch =target_branch,
+         title = title,
+         description = description,
+         verb = httr::POST,
+         ...)
+}
+
 #' @rdname repository
 #' @import functional
 #' @export
 list_files <- functional::Curry(repository, req = "tree") ## should have a recursive option
 
+#' For \code{file_exists} dots are passed on to \code{\link{list_files}} and gitlab API call
+#' @export
+#' @rdname get_file
+file_exists <- function(project, file_path, ...) {
+  list(...) %>%
+    iff(dirname(file_path) != ".", c, path = dirname(file_path)) %>%
+    c(project = project) %>%
+    pipe_into("args", do.call, what = list_files) %>%
+    dplyr::filter(name == basename(file_path)) %>%
+    { nrow(.) > 0 }
+}
 
 #' Create a project specific request
 #' 
@@ -87,6 +158,44 @@ get_file <- function(project
     base64decode() %>%
     iff(to_char, rawToChar)
   
+}
+
+#' Upload a file to a gitlab repository
+#'
+#' If the file already exists, it is updated/overwritten by default
+#'
+#' @return returns a data.frame with changed branch and path (0 rows if
+#' nothing was changed, since overwrite is FALSE)
+#'
+#' @param project Project name or id
+#' @param file_path path where to store file in repository
+#' @param content file content (text)
+#' @param branch_name name of branch where to append newly generated commit with new/updated file
+#' @param commit_message Message to use for commit with new/updated file
+#' @param overwrite whether to overwrite files that already exist
+#' @param ... passed on to \code{\link{gitlab}}
+#' @export
+push_file <- function(project
+                    , file_path
+                    , content
+                    , commit_message
+                    , branch_name = "master"
+                    , overwrite = TRUE
+                    , ...) {
+
+  exists <- file_exists(project = project, file_path, ref = branch_name, ...)
+  if (!exists || overwrite) {
+    gitlab(req = proj_req(project = project, c("repository", "files"), ...)
+           , branch_name = branch_name
+           , file_path = file_path
+           , content = content
+           , commit_message = commit_message
+           , verb = if (exists) { httr::PUT } else { httr::POST }
+           , ...)
+  } else {
+    data.frame(file_path = character(0),
+               branch_name = character(0))
+  }
 }
 
 #' Get zip archive of a specific repository

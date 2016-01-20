@@ -5,7 +5,9 @@
 \title{Request Gitlab API}
 \usage{
 gitlab(req, api_root, verb = httr::GET, auto_format = TRUE, debug = FALSE,
-  gitlab_con = "default", page = "all", enforce_api_root = TRUE, ...)
+  gitlab_con = "default", page = "all", enforce_api_root = TRUE,
+  argname_verb = if (identical(verb, httr::GET) | identical(verb,
+  httr::DELETE)) {     "query" } else {     "body" }, ...)
 }
 \arguments{
 \item{req}{vector of characters that represents the call (e.g. \code{c("projects", project_id, "events")})}
@@ -29,6 +31,8 @@ successively and combined.}
 to be the same as in the original call for all calls using the "next page" URL returned
 by gitlab. This makes sense for security and in cases where gitlab is behind a reverse proxy
 and ignorant about its URL from external.}
+
+\item{argname_verb}{name of the argument of the verb that fields and information are passed on to}
 
 \item{...}{named parameters to pass on to gitlab API (technically: modifies query parameters of request URL),
 may include private_token and all other parameters as documented for the Gitlab API}

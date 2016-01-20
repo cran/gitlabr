@@ -14,6 +14,7 @@
 #' to be the same as in the original call for all calls using the "next page" URL returned
 #' by gitlab. This makes sense for security and in cases where gitlab is behind a reverse proxy
 #' and ignorant about its URL from external.
+#' @param argname_verb name of the argument of the verb that fields and information are passed on to
 #' @param ... named parameters to pass on to gitlab API (technically: modifies query parameters of request URL),
 #' may include private_token and all other parameters as documented for the Gitlab API
 #' @importFrom utils capture.output
@@ -26,6 +27,8 @@ gitlab <- function(req
                  , gitlab_con = "default"
                  , page = "all"
                  , enforce_api_root = TRUE
+                 , argname_verb = if (identical(verb, httr::GET) |
+                                      identical(verb, httr::DELETE)) { "query" } else { "body" }
                  , ...) {
   
   if (!is.function(gitlab_con) &&
@@ -35,12 +38,14 @@ gitlab <- function(req
   }
   
   if (!is.function(gitlab_con)) {
-    req %>%
+    url <- req %>%
       paste(collapse = "/") %>%
       prefix(api_root, "/") %T>%
       iff(debug, function(x) { print(paste(c("URL:", x, " "
-                                             , "query:", paste(utils::capture.output(print((list(...)))), collapse = " "), " ", collapse = " "))); x }) %>%
-      verb(query = if (page == "all") {list(...)} else { list(page = page, ...)} ) %>%
+                                             , "query:", paste(utils::capture.output(print((list(...)))), collapse = " "), " ", collapse = " "))); x })
+    
+    (if (page == "all") {list(...)} else { list(page = page, ...)}) %>%
+      pipe_into(argname_verb, verb, url = url) %>%
       http_error_or_content()   -> resp
 
     resp$ct %>%
