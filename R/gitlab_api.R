@@ -1,5 +1,8 @@
 #' Request Gitlab API
 #' 
+#' Note: currently gitlab API v3 is supported. Support for Gitlab API v4 (for Gitlab version >= 9.0) will
+#' be added soon.
+#' 
 #' @param req vector of characters that represents the call (e.g. \code{c("projects", project_id, "events")})
 #' @param api_root URL where the gitlab API to request resides (e.g. \code{https://gitlab.myserver.com/api/v3/})
 #' @param verb http verb to use for request in form of one of the \code{httr} functions
@@ -18,6 +21,7 @@
 #' @param ... named parameters to pass on to gitlab API (technically: modifies query parameters of request URL),
 #' may include private_token and all other parameters as documented for the Gitlab API
 #' @importFrom utils capture.output
+#' @importFrom tibble data_frame as_data_frame
 #' @export
 gitlab <- function(req
                  , api_root
@@ -102,7 +106,7 @@ http_error_or_content <- function(response
   
   if (!identical(handle(response), FALSE)) {
     ct <- httr::content(response, ...)
-    nxt <- get_next_link(headers(response)$link)
+    nxt <- get_next_link(httr::headers(response)$link)
     list(ct = ct, nxt = nxt)
   }
 }
@@ -112,14 +116,14 @@ get_rel <- function(links) {
   links %>%
     stringr::str_split(",\\s+") %>%
     getElement(1) -> strs
-  data.frame(link = strs %>%
-               lapply(stringr::str_replace_all, "\\<(.+)\\>.*", "\\1") %>%
-               unlist(),
-             rel = strs %>%
-               lapply(stringr::str_replace_all, ".+rel=.(\\w+).", "\\1") %>%
-               unlist(),
-             stringsAsFactors = FALSE)
-}
+  tibble::data_frame(link = strs %>%
+                       lapply(stringr::str_replace_all, "\\<(.+)\\>.*", "\\1") %>%
+                       unlist(),
+                     rel = strs %>%
+                       lapply(stringr::str_replace_all, ".+rel=.(\\w+).", "\\1") %>%
+                       unlist(),
+                     stringsAsFactors = FALSE)
+        }
 
 get_next_link <- function(links) {
   if(is.null(links)) {
@@ -159,7 +163,7 @@ is_single_row <- function(l) {
 format_row <- function(row, ...) {
   row %>%
     lapply(unlist, use.names = FALSE, ...) %>%
-    as.data.frame(stringsAsFactors = FALSE)
+    tibble::as_data_frame(stringsAsFactors = FALSE)
 }
 
 json_to_flat_df <- function(l) {
@@ -169,4 +173,15 @@ json_to_flat_df <- function(l) {
     lapply(unlist, recursive = TRUE) %>%
     lapply(format_row) %>%
     bind_rows()
+}
+
+call_filter_dots <- function(fun,
+                              .dots = list(),
+                              .dots_allowed = gitlab %>%
+                                formals() %>%
+                                names() %>%
+                                setdiff("...") %>%
+                                c("api_root", "private_token"),
+                              ...) {
+  do.call(fun, args = c(list(...), .dots[intersect(.dots_allowed, names(.dots))]))
 }

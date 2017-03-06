@@ -1,7 +1,7 @@
 #' Connect to a specific gitlab instance API
 #' 
 #' Creates a function that can be used to issue requests to the specified
-#' gitlab API instance with the specified user private token and (for \code{project_connection})
+#' gitlab API instance with the specified user private token and (for \code{gl_project_connection})
 #' only to a specified project.
 #' 
 #' @details
@@ -10,13 +10,16 @@
 #' as the function \code{\link{gitlab}} does, as well as the convenience functions
 #' provided by this package or written by the user. If it is passed such that
 #' function it calls it with the arguments provided in \code{...} and the gitlab
-#' URL, api location and private_token provided when creating it via \code{gitlab_connection}.
+#' URL, api location and private_token provided when creating it via \code{gl_connection}.
+#' 
+#' Note: currently gitlab API v3 is supported. Support for Gitlab API v4 (for Gitlab version >= 9.0) will
+#' be added soon.
 #' 
 #' @examples
 #' \dontrun{
-#' my_gitlab <- gitlab_connection("http://gitlab.example.com", "123####89")
+#' my_gitlab <- gl_connection("http://gitlab.example.com", "123####89")
 #' my_gitlab("projects")
-#' my_gitlab(get_file, "test-project", "README.md", ref = "dev")
+#' my_gitlab(gl_get_file, "test-project", "README.md", ref = "dev")
 #' }
 #' 
 #' @param gitlab_url URL to the gitlab instance (e.g. \code{https://gitlab.myserver.com})
@@ -30,7 +33,7 @@
 #' @return A function to access a specific gitlab API as a specific user, see details
 #' 
 #' @export
-gitlab_connection <- function(gitlab_url
+gl_connection <- function(gitlab_url
                             , login = NULL
                             , email = NULL
                             , password = NULL
@@ -59,8 +62,8 @@ gitlab_connection <- function(gitlab_url
 }
 
 #' @export
-#' @rdname gitlab_connection
-project_connection <- function(gitlab_url
+#' @rdname gl_connection
+gl_project_connection <- function(gitlab_url
                              , project
                              , login = NULL
                              , email = NULL
@@ -74,7 +77,7 @@ project_connection <- function(gitlab_url
     private_token <- get_private_token(gl_con_root, login, email, password)
   }
   
-  return(function(req, ...) { ## actually this could be curried from connection
+  return(function(req, ...) {
     if (is.function(req)) {
       req(api_root = gl_con_root
         , private_token = private_token
@@ -83,7 +86,7 @@ project_connection <- function(gitlab_url
                                 , private_token = private_token)
         , ...)
     } else {
-      gitlab(req = proj_req(project
+      gitlab(req = gl_proj_req(project
                           , req = req
                           , api_root = gl_con_root
                           , private_token = private_token
@@ -102,7 +105,7 @@ get_private_token <- function(api_root
                             , password = NULL) {
   
   token_req <-
-    functional::Curry(gitlab
+    purrr::partial(gitlab
                     , req = "session"
                     , api_root = api_root
                     , verb = httr::POST
