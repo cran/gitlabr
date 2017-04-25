@@ -22,3 +22,9 @@ to the saved archived file
 \description{
 Get zip archive of a specific repository
 }
+\examples{
+\dontrun{
+my_project <- gl_project_connection(project = "example-project", ...) ## fill in login parameters
+my_project(gl_archive, save_to_file = "example-project.zip")
+}
+}

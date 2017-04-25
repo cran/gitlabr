@@ -12,3 +12,9 @@ gl_list_projects(...)
 \description{
 List projects in Gitlab
 }
+\examples{
+\dontrun{
+my_gitlab <- gl_connection(...) ## fill in login parameters
+my_gitlab(gl_list_projects)
+}
+}

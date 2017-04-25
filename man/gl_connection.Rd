@@ -6,10 +6,12 @@
 \title{Connect to a specific gitlab instance API}
 \usage{
 gl_connection(gitlab_url, login = NULL, email = NULL, password = NULL,
-  private_token = NULL, api_location = "/api/v3/")
+  private_token = NULL, api_version = "v4", api_location = paste0("/api/",
+  api_version, "/"))
 
 gl_project_connection(gitlab_url, project, login = NULL, email = NULL,
-  password = NULL, private_token = NULL, api_location = "/api/v3/")
+  password = NULL, private_token = NULL, api_version = "v4",
+  api_location = paste0("/api/", api_version, "/"))
 }
 \arguments{
 \item{gitlab_url}{URL to the gitlab instance (e.g. \code{https://gitlab.myserver.com})}
@@ -22,7 +24,9 @@ gl_project_connection(gitlab_url, project, login = NULL, email = NULL,
 
 \item{private_token}{private_token with which to identify; either this or login/email + passsword must be specified to init connection}
 
-\item{api_location}{location of the gitlab API under the \code{gitlab_url}, usually and by default "/api/v3/"}
+\item{api_version}{Either "v3" or "v4" for one of the two gitlab API version. See Details section on API versions.}
+
+\item{api_location}{location of the gitlab API under the \code{gitlab_url}, usually and by default "/api/${api_version}/"}
 
 \item{project}{id or name of project to issue requests to}
 }
@@ -45,6 +49,21 @@ URL, api location and private_token provided when creating it via \code{gl_conne
 Note: currently gitlab API v3 is supported. Support for Gitlab API v4 (for Gitlab version >= 9.0) will
 be added soon.
 }
+\section{API versions}{
+
+Currently (April 2017, Gitlab version 9.0), Gitlab provides two API versions "v3" and "v4",
+where "v3" is deprecated and to be removed soon from Gitlab. "v4" is the standard API since Gitlab version 9.0.
+gitlabr supports both API versions, since "v3" was the standard until very recently. gitlabr will support
+API v3 until gitlabr 1.0 (to be released in 2017), with which it will become deprecated also in gitlabr.
+"v4" is the default setting in gitlabr from version 0.9 on.
+
+For some functions, where the API endpoints
+differ in logic, a parameter `force_api_v3` is provided with functions to enforce API v3 logic. This
+has to be set manually with each call in addition to the api_version parameter of the connection.
+Rather than using this parameter, it is intended to update your Gitlab installation to support API v4.
+Use this parameter only as a workaround when this is not possible!
+}
+
 \examples{
 \dontrun{
 my_gitlab <- gl_connection("http://gitlab.example.com", "123####89")

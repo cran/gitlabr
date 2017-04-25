@@ -1,8 +1,14 @@
-gl_get_issues <- function(project = NULL
-                     , issue_id = NULL
-                     , verb = httr::GET
-                     , ...) {
-  (if (!missing(project) && is.null(project)) "issues" else gl_proj_req(project, req = c("issues", gl_to_issue_id(issue_id, project, ...)), ...)) %>%
+gl_get_issues <- function(project = NULL,
+                          issue_id = NULL,
+                          verb = httr::GET,
+                          force_api_v3 = FALSE,
+                          ...) {
+  
+  if (force_api_v3) {
+    issue_id <- gl_to_issue_id(issue_id, project, force_api_v3 = force_api_v3, ...)
+  }
+  
+  (if (!missing(project) && is.null(project)) "issues" else gl_proj_req(project, req = c("issues", issue_id), ...)) %>%
     gitlab(...) %>%
     iffn(is.null(issue_id), function(issue) {
       issue %>%
@@ -15,12 +21,21 @@ gl_get_issues <- function(project = NULL
 #' Get issues of a project or user
 #' 
 #' @param project project name or id, may be null for all issues created by user
-#' @param issue_id optional issue id (projectwide iid, not gitlab API id)
+#' @param issue_id optional issue id (projectwide; for API v3 only you can use global iid when force_api_v3 is `TRUE`)
+#' @param force_api_v3 a switch to force deprecated gitlab API v3 behavior that allows filtering by global iid. If `TRUE`
+#' filtering happens by global iid, if false, it happens by projectwide ID. For API v4, this must be FALSE (default)
 #' @param ... further parameters passed on to \code{\link{gitlab}}, may be
 #' state, labels, issue id, ...
 #' @param verb ignored; all calls with this function will have \code{\link{gitlab}}'s
 #' default verb \code{httr::GET}
 #' @export
+#' 
+#' @examples \dontrun{
+#' my_project <- gl_project_connection(project = "testor"...) ## fill in login parameters
+#' my_project(gl_list_issues)
+#' my_project(gl_get_issue, 1)
+#' my_project(gl_new_issue, 1, "Implement new feature", description = "It should be awesome.")
+#' }
 gl_list_issues <- gl_get_issues
 
 #' @details 
@@ -34,18 +49,29 @@ gl_get_issue <- function(issue_id, project, ...) {
 
 #' Translate projectwide issue id to global gitlab API issue id
 #' 
+#' This functions is only intended to be used with gitlab API v3. With v4, the
+#' global iid is no longer functional.
+#' 
 #' @param issue_id projectwide issue id (as seen by e.g. gitlab website users)
+#' @param force_api_v3 Since this function is no longer necessary for Gitlab API v4,
+#' this must be set to TRUE in order to avoid deprecation warning and HTTP error. It currently
+#' default to TRUE, but this will change with gitlabr 1.0.
 #' @param project project name or id
 #' @param ... passed on to \code{\link{gitlab}}
 #' @export
-gl_to_issue_id <- function(issue_id, project, ...) {
+gl_to_issue_id <- function(issue_id, project, force_api_v3 = TRUE, ...) {
+  
+  if(!force_api_v3) {
+    .Deprecated("gl_get_issue", package = "gitlabr",
+                msg = "Usage deprecated! gl_to_issue_id can sensibly be used only with gitlab API v3!")
+  }
   if (is.null(issue_id)) {
     NULL
   } else {
     (if (missing(project)) {
-      call_filter_dots(gl_get_issues, .dots = list(...))
+      call_filter_dots(gl_get_issues, .dots = list(...), force_api_3 = force_api_v3)
     } else {
-      call_filter_dots(gl_get_issues, .dots = list(...), project = project)  
+      call_filter_dots(gl_get_issues, .dots = list(...), project = project, force_api_v3 = force_api_v3)  
     }) %>%
       filter(iid == issue_id) %>%
       select(id) %>%
@@ -65,57 +91,66 @@ gl_to_issue_id <- function(issue_id, project, ...) {
 #' 
 #' @rdname gl_edit_issue
 #' @export
-gl_new_issue <- function(title
-                    , project
-                    , ...) {
-  gitlab(req = gl_proj_req(project, "issues", ...)
-       , title = title
-       , verb = httr::POST
-       , ...)
+gl_new_issue <- function(title,
+                         project,
+                         ...) {
+  gitlab(req = gl_proj_req(project, "issues", ...),
+         title = title,
+         verb = httr::POST,
+         ...)
 }
 
 #' Post a new issue or edit one
 #' 
-#' @param issue_id id of issue to edit  (projectwide iid, not gitlab API id)
+#' @param issue_id issue id (projectwide; for API v3 only you can use global iid when force_api_v3 is `TRUE` although this is not recommended!)
+#' @param force_api_v3 a switch to force deprecated gitlab API v3 behavior that allows filtering by global iid. If `TRUE`
+#' filtering happens by global iid, if false, it happens by projectwide ID. For API v4, this must be FALSE (default)
 #' @export
-gl_edit_issue <- function(issue_id
-                     , project
-                     , ...) {
-  gitlab(req = gl_proj_req(project, req = c("issues", gl_to_issue_id(issue_id, project, ...)), ...)
-       , verb = httr::PUT
-       , ...)
+gl_edit_issue <- function(issue_id,
+                          project,
+                          force_api_v3 = FALSE,
+                          ...) {
+  
+  if (force_api_v3) {
+    issue_id <- gl_to_issue_id(issue_id, project, ...)
+  }
+  
+  
+  gitlab(req = gl_proj_req(project, req = c("issues", issue_id), ...),
+         verb = httr::PUT,
+         ...)
 }
 
 #' @rdname gl_edit_issue
 #' @export
-gl_close_issue <- function(issue_id
-                      , project
-                      , ...) {
+gl_close_issue <- function(issue_id,
+                           project,
+                           ...) {
   gl_edit_issue(issue_id, project, state_event = "close", ...)
 }
 
 #' @rdname gl_edit_issue
 #' @export
-gl_reopen_issue <- function(issue_id
-                       , project
-                       , ...) {
+gl_reopen_issue <- function(issue_id,
+                            project,
+                            ...) {
   gl_edit_issue(issue_id, project, state_event = "reopen", ...)
 }
 
 #' @rdname gl_edit_issue
 #' @param assignee_id numeric id of users as returned in '/users/' API request
 #' @export
-gl_assign_issue <- function(issue_id
-                       , assignee_id = NULL
-                       , project
-                       , ...) {
+gl_assign_issue <- function(issue_id,
+                            assignee_id = NULL,
+                            project,
+                            ...) {
   gl_edit_issue(issue_id, project, assignee_id = assignee_id, ...)
 }
 
 #' @rdname gl_edit_issue
 #' @export
-gl_unassign_issue <- function(issue_id
-                         , project
-                         , ...) {
+gl_unassign_issue <- function(issue_id,
+                              project,
+                              ...) {
   gl_assign_issue(issue_id, project, assignee_id = 0, ...)
 }

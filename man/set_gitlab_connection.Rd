@@ -20,3 +20,8 @@ is ... using \code{\link{gl_connection}}}
 This sets the default value of \code{gitlab_con} 
 in a call to \code{\link{gitlab}}
 }
+\examples{
+\dontrun{
+set_gitlab_connection("http://gitlab.example.com", private_token = "123####89")
+}
+}

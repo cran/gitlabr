@@ -1,5 +1,9 @@
 #' Request Gitlab API
 #' 
+#' This is gitlabr's core function to talk to Gitlab's server API via HTTP(S). Usually you will not
+#' use this function directly too often, but either use gitlabr's convenience wrappers or write your
+#' own. See the \code{gitlabr} vignette for more information on this.
+#' 
 #' Note: currently gitlab API v3 is supported. Support for Gitlab API v4 (for Gitlab version >= 9.0) will
 #' be added soon.
 #' 
@@ -23,17 +27,28 @@
 #' @importFrom utils capture.output
 #' @importFrom tibble data_frame as_data_frame
 #' @export
-gitlab <- function(req
-                 , api_root
-                 , verb = httr::GET
-                 , auto_format = TRUE
-                 , debug = FALSE
-                 , gitlab_con = "default"
-                 , page = "all"
-                 , enforce_api_root = TRUE
-                 , argname_verb = if (identical(verb, httr::GET) |
-                                      identical(verb, httr::DELETE)) { "query" } else { "body" }
-                 , ...) {
+#' 
+#' @return the response from the Gitlab API, usually as a `data_frame` and including all pages
+#' 
+#' @examples \dontrun{
+#' gitlab(req = "projects",
+#'        api_root = "https://gitlab.example.com/api/v4/",
+#'        private_token = "123####89")
+#' gitlab(req = c("projects", 21, "issues"),
+#'        state = "closed",
+#'        gitlab_con = my_gitlab)
+#' }
+gitlab <- function(req,
+                   api_root,
+                   verb = httr::GET,
+                   auto_format = TRUE,
+                   debug = FALSE,
+                   gitlab_con = "default",
+                   page = "all",
+                   enforce_api_root = TRUE,
+                   argname_verb = if (identical(verb, httr::GET) |
+                                      identical(verb, httr::DELETE)) { "query" } else { "body" },
+                   ...) {
   
   if (!is.function(gitlab_con) &&
       gitlab_con == "default" &&
@@ -49,30 +64,30 @@ gitlab <- function(req
                                              , "query:", paste(utils::capture.output(print((list(...)))), collapse = " "), " ", collapse = " "))); x })
     
     (if (page == "all") {list(...)} else { list(page = page, ...)}) %>%
-      pipe_into(argname_verb, verb, url = url) %>%
+      pipe_into(argname_verb, gl_retry, verb = verb, url = url) %>%
       http_error_or_content()   -> resp
-
+    
     resp$ct %>%
       iff(auto_format, json_to_flat_df) %>% ## better would be to check MIME type
       iff(debug, print) -> resp$ct
-
+    
     if (page == "all") {
       private_token <- list(...)[["private_token"]]
       while (length(resp$nxt) > 0) {
         nxt_resp <- resp$nxt %>%
           as.character() %>%
-          iff(enforce_api_root, stringr::str_replace, "^.*/api/v3/", api_root) %>%
+          iff(enforce_api_root, stringr::str_replace, "^.*/api/v\\d/", api_root) %>%
           paste0("&private_token=", private_token) %>%
-          httr::GET() %>%
+          gl_retry() %>%
           http_error_or_content()
         resp$nxt <- nxt_resp$nxt
         resp$ct <- bind_rows(resp$ct, nxt_resp$ct %>%
                                iff(auto_format, json_to_flat_df))
       }
     }
-
+    
     return(resp$ct)
-
+    
   } else {
     
     if (!missing(req)) {
@@ -100,9 +115,27 @@ gitlab <- function(req
   }
 }
 
-http_error_or_content <- function(response
-                                , handle = httr::stop_for_status
-                                , ...) {
+gl_retry <- function(url, verb = httr::GET, times = 3, wait_secs = 25, ...) {
+  
+  while(times > 0L) {
+    response <- verb(url = url, ...)
+    
+    if (httr::http_status(response)$category == "Server error") {
+      message("Encountered ", httr::http_status(response)$message, ". Retrying in ", wait_secs, " seconds.")
+      Sys.sleep(wait_secs)
+    } else {
+      times <- 0L
+    }
+    
+    times <- times - 1
+  }
+  
+  response
+}
+
+http_error_or_content <- function(response,
+                                  handle = httr::stop_for_status,
+                                  ...) {
   
   if (!identical(handle(response), FALSE)) {
     ct <- httr::content(response, ...)
@@ -123,7 +156,7 @@ get_rel <- function(links) {
                        lapply(stringr::str_replace_all, ".+rel=.(\\w+).", "\\1") %>%
                        unlist(),
                      stringsAsFactors = FALSE)
-        }
+}
 
 get_next_link <- function(links) {
   if(is.null(links)) {
@@ -176,12 +209,12 @@ json_to_flat_df <- function(l) {
 }
 
 call_filter_dots <- function(fun,
-                              .dots = list(),
-                              .dots_allowed = gitlab %>%
-                                formals() %>%
-                                names() %>%
-                                setdiff("...") %>%
-                                c("api_root", "private_token"),
-                              ...) {
+                             .dots = list(),
+                             .dots_allowed = gitlab %>%
+                               formals() %>%
+                               names() %>%
+                               setdiff("...") %>%
+                               c("api_root", "private_token"),
+                             ...) {
   do.call(fun, args = c(list(...), .dots[intersect(.dots_allowed, names(.dots))]))
 }

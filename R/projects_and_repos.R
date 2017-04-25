@@ -2,20 +2,31 @@
 #' 
 #' @param ... passed on to \code{\link{gitlab}}
 #' @export
+#' 
+#' @examples \dontrun{
+#' my_gitlab <- gl_connection(...) ## fill in login parameters
+#' my_gitlab(gl_list_projects)
+#' }
 gl_list_projects <- function(...) {
   gitlab("projects", ...)
 }
 
-#' Access to repository functions in Gitlab API
+#' Access to repository functions and files in Gitlab API
 #' 
 #' @param project name or id of project (not repository!)
 #' @param req request to perform on repository (everything after '/repository/'
 #' in gitlab API, as vector or part of URL)
-#' @param ... passed on to \code{\link{gitlab}} API call, may include \code{path} argument for path
+#' @param ... passed on to \code{\link{gitlab}} API call
 #' @export
-gl_repository <- function(req = c("tree")
-                     , project
-                     , ...) {
+#' 
+#' @examples \dontrun{
+#' my_project <- gl_project_connection(project = "example-project", ...) ## fill in login parameters
+#' my_project(gl_list_files)
+#' my_project(gl_get_file, "data.csv")
+#' }
+gl_repository <- function(req = c("tree"),
+                          project,
+                          ...) {
   gitlab(gl_proj_req(project, c("repository", req), ...), ...)
 }
 
@@ -72,7 +83,7 @@ gl_delete_branch <- function(project, branch_name, verb = httr::POST, ...) {
 gl_create_merge_request <- function(project, source_branch, target_branch = "master", title, description, verb = httr::POST, ...) {
   gitlab(req = gl_proj_req(project = project, c("merge_requests"), ...),
          source_branch = source_branch,
-         target_branch =target_branch,
+         target_branch = target_branch,
          title = title,
          description = description,
          verb = httr::POST,
@@ -86,7 +97,7 @@ gl_list_files <- purrr::partial(gl_repository, req = "tree") ## should have a re
 
 #' For \code{gl_file_exists} dots are passed on to \code{\link{gl_list_files}} and gitlab API call
 #' @export
-#' @rdname gl_get_file
+#' @rdname gl_repository
 gl_file_exists <- function(project, file_path, ...) {
   
   project_missing <- missing(project)
@@ -156,24 +167,33 @@ to_project_id <- function(x, ...) {
 
 #' Get a file from a gitlab repository
 #' 
-#' @param project name or id of project
 #' @param file_path path to file
 #' @param ref name of ref (commit branch or tag)
 #' @param to_char flag if output should be converted to char; otherwise it is of class raw
-#' @param ... passed on to \code{\link{gitlab}}
+#' @param force_api_v3 a switch to force deprecated gitlab API v3 behavior. See details section "API version" of \code{\link{gl_connection}} 
 #' @export
 #' @importFrom base64enc base64decode
-gl_get_file <- function(project
-                   , file_path
-                   , ref = "master"
-                   , to_char = TRUE
-                   , ...) {
-  gl_repository(project = project
-           , req = "files"
-           , file_path = file_path
-           , ref = ref
-           , verb = httr::GET
-           , ...)$content %>% 
+#' @rdname gl_repository
+gl_get_file <- function(project,
+                        file_path,
+                        ref = "master",
+                        to_char = TRUE,
+                        force_api_v3 = FALSE,
+                        ...) {
+  (if (force_api_v3) {
+    gl_repository(project = project,
+                  req = "files",
+                  file_path = file_path,
+                  ref = ref,
+                  verb = httr::GET,
+                  ...)
+  } else {
+    gl_repository(project = project,
+                  req = c("files", file_path),
+                  ref = ref,
+                  verb = httr::GET,
+                  ...)
+  })$content %>% 
     base64decode() %>%
     iff(to_char, rawToChar)
   
@@ -194,23 +214,30 @@ gl_get_file <- function(project
 #' @param overwrite whether to overwrite files that already exist
 #' @param ... passed on to \code{\link{gitlab}}
 #' @export
-gl_push_file <- function(project
-                    , file_path
-                    , content
-                    , commit_message
-                    , branch_name = "master"
-                    , overwrite = TRUE
-                    , ...) {
-
+#' 
+#' @examples \dontrun{
+#' my_project <- gl_project_connection(project = "example-project", ...) ## fill in login parameters
+#' my_project(gl_push_file, "data/test_data.csv",
+#'            content = readLines("test-data.csv"),
+#'            commit_message = "New test data")
+#' }
+gl_push_file <- function(project,
+                         file_path,
+                         content,
+                         commit_message,
+                         branch_name = "master",
+                         overwrite = TRUE,
+                         ...) {
+  
   exists <- gl_file_exists(project = project, file_path, ref_name = branch_name, ...)
   if (!exists || overwrite) {
-    gitlab(req = gl_proj_req(project = project, c("repository", "files"), ...)
-           , branch_name = branch_name
-           , file_path = file_path
-           , content = content
-           , commit_message = commit_message
-           , verb = if (exists) { httr::PUT } else { httr::POST }
-           , ...)
+    gitlab(req = gl_proj_req(project = project, c("repository", "files"), ...),
+           branch_name = branch_name,
+           file_path = file_path,
+           content = content,
+           commit_message = commit_message,
+           verb = if (exists) { httr::PUT } else { httr::POST },
+           ...)
   } else {
     tibble::data_frame(file_path = character(0),
                        branch_name = character(0))
@@ -227,9 +254,13 @@ gl_push_file <- function(project
 #' @return if save_to_file is NULL, a raw vector of the archive, else the path
 #' to the saved archived file 
 #' @export
-gl_archive <- function(project
-                  , save_to_file = tempfile(fileext = ".zip")
-                  , ...) {
+#' @examples \dontrun{
+#' my_project <- gl_project_connection(project = "example-project", ...) ## fill in login parameters
+#' my_project(gl_archive, save_to_file = "example-project.zip")
+#' }
+gl_archive <- function(project,
+                       save_to_file = tempfile(fileext = ".zip"),
+                       ...) {
   
   raw_gl_archive <- gl_repository(project = project, req = "archive", ...)
   if (!is.null(save_to_file)) {
@@ -251,14 +282,14 @@ gl_archive <- function(project
 #' @param from commit hash or ref/branch/tag name to compare from
 #' @param to ommit hash or ref/branch/tag name to compare to
 #' @param ... further parameters passed on to \code{\link{gitlab}}
-gl_compare_refs <- function(project
-                       , from
-                       , to
-                       , ...) {
-  gl_repository(req = "compare"
-           , project = project
-           , from = from
-           , ...)
+gl_compare_refs <- function(project,
+                            from,
+                            to,
+                            ...) {
+  gl_repository(req = "compare",
+                project = project,
+                from = from,
+                ...)
 }
 
 #' Get commits and diff from a project repository
@@ -269,22 +300,22 @@ gl_compare_refs <- function(project
 #' @param ... passed on to \code{\link{gitlab}} API call, may contain
 #' \code{ref_name} for specifying a branch or tag to list commits of
 #' @export
-gl_get_commits <- function(project
-                      , commit_sha = c()
-                      , ...) {
+gl_get_commits <- function(project,
+                           commit_sha = c(),
+                           ...) {
   
-  gl_repository(project = project
-           , req = c("commits", commit_sha)
-           , ...)
+  gl_repository(project = project,
+                req = c("commits", commit_sha),
+                ...)
 }
 
 #' @rdname gl_get_commits
 #' @export
-gl_get_diff <-  function(project
-                     , commit_sha
-                     , ...) {
+gl_get_diff <-  function(project,
+                         commit_sha,
+                         ...) {
   
-  gl_repository(project = project
-           , req = c("commits", commit_sha, "diff")
-           , ...)
+  gl_repository(project = project,
+                req = c("commits", commit_sha, "diff"),
+                ...)
 }

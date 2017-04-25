@@ -9,7 +9,7 @@
 \alias{gl_edit_comment}
 \alias{gl_edit_issue_comment}
 \alias{gl_edit_commit_comment}
-\title{Get the comments of a commit or issue}
+\title{Get the comments/notes of a commit or issue}
 \usage{
 gl_get_comments(object_type = "issue", id, note_id = c(), project, ...)
 
@@ -30,7 +30,8 @@ gl_edit_commit_comment(...)
 \arguments{
 \item{object_type}{one of "issue" or "commit". Snippets and merge_requests are not implemented yet.}
 
-\item{id}{id of object: (project-wide) issue_id or commit sha}
+\item{id}{id of object: sha for commits, not issues notes/comments:
+(project-wide) id for api version 4, (global) iid for api version 3}
 
 \item{note_id}{id of note}
 
@@ -41,10 +42,18 @@ gl_edit_commit_comment(...)
 \item{text}{Text of comment/note to add or edit (translates to gitlab API note/body respectively)}
 }
 \description{
-Get the comments of a commit or issue
+Get the comments/notes of a commit or issue
 }
 \details{
 For \code{gl_comment_commit} ... might also contain \code{path}, \code{line}
 and \code{line_type} (old or new) to attach the comment to a specific in a file.
 See http://doc.gitlab.com/ce/api/commits.html
+}
+\examples{
+\dontrun{
+my_project <- gl_project_connection(project = "testor"...) ## fill in login parameters
+my_project(gl_get_comments, "issue", 1)
+my_project(gl_get_comments, "commit", "8ce5ef240123cd78c1537991e5de8d8323666b15")
+my_project(gl_comment_issue, 1, text = "Almost done!")
+}
 }

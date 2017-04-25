@@ -3,11 +3,18 @@
 \name{gl_repository}
 \alias{gl_repository}
 \alias{gl_list_files}
-\title{Access to repository functions in Gitlab API}
+\alias{gl_file_exists}
+\alias{gl_get_file}
+\title{Access to repository functions and files in Gitlab API}
 \usage{
 gl_repository(req = c("tree"), project, ...)
 
 gl_list_files(...)
+
+gl_file_exists(project, file_path, ...)
+
+gl_get_file(project, file_path, ref = "master", to_char = TRUE,
+  force_api_v3 = FALSE, ...)
 }
 \arguments{
 \item{req}{request to perform on repository (everything after '/repository/'
@@ -15,8 +22,27 @@ in gitlab API, as vector or part of URL)}
 
 \item{project}{name or id of project (not repository!)}
 
-\item{...}{passed on to \code{\link{gitlab}} API call, may include \code{path} argument for path}
+\item{...}{passed on to \code{\link{gitlab}} API call}
+
+\item{file_path}{path to file}
+
+\item{ref}{name of ref (commit branch or tag)}
+
+\item{to_char}{flag if output should be converted to char; otherwise it is of class raw}
+
+\item{force_api_v3}{a switch to force deprecated gitlab API v3 behavior. See details section "API version" of \code{\link{gl_connection}}}
 }
 \description{
-Access to repository functions in Gitlab API
+Access to repository functions and files in Gitlab API
+
+For \code{gl_file_exists} dots are passed on to \code{\link{gl_list_files}} and gitlab API call
+
+Get a file from a gitlab repository
+}
+\examples{
+\dontrun{
+my_project <- gl_project_connection(project = "example-project", ...) ## fill in login parameters
+my_project(gl_list_files)
+my_project(gl_get_file, "data.csv")
+}
 }

@@ -37,7 +37,25 @@ and ignorant about its URL from external.}
 \item{...}{named parameters to pass on to gitlab API (technically: modifies query parameters of request URL),
 may include private_token and all other parameters as documented for the Gitlab API}
 }
+\value{
+the response from the Gitlab API, usually as a `data_frame` and including all pages
+}
 \description{
+This is gitlabr's core function to talk to Gitlab's server API via HTTP(S). Usually you will not
+use this function directly too often, but either use gitlabr's convenience wrappers or write your
+own. See the \code{gitlabr} vignette for more information on this.
+}
+\details{
 Note: currently gitlab API v3 is supported. Support for Gitlab API v4 (for Gitlab version >= 9.0) will
 be added soon.
+}
+\examples{
+\dontrun{
+gitlab(req = "projects",
+       api_root = "https://gitlab.example.com/api/v4/",
+       private_token = "123####89")
+gitlab(req = c("projects", 21, "issues"),
+       state = "closed",
+       gitlab_con = my_gitlab)
+}
 }

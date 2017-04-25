@@ -29,3 +29,11 @@ nothing was changed, since overwrite is FALSE)
 \description{
 If the file already exists, it is updated/overwritten by default
 }
+\examples{
+\dontrun{
+my_project <- gl_project_connection(project = "example-project", ...) ## fill in login parameters
+my_project(gl_push_file, "data/test_data.csv",
+           content = readLines("test-data.csv"),
+           commit_message = "New test data")
+}
+}
