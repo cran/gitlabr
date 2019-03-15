@@ -13,6 +13,7 @@
 #' @param output from shinyServer function, usually not user provided
 #' @param session from shinyServer function, usually not user provided
 #' @param gitlab_url root URL of gitlab instance to login to
+#' @param api_version A character with value either "v3" or "v4" to specify the API version that should be used
 #' @param project if not NULL, a code{\link{gl_project_connection}} is created to this project
 #' @param success_message message text to be displayed in the UI on sucessful login 
 #' @param failure_message message text to be displayed in the UI on login failure in addition to HTTP status
@@ -28,9 +29,9 @@ glLoginInput <- function(id, login_button = TRUE) {
   
   ns <- shiny::NS(id)
   
-  shiny::tagList(shiny::textInput(ns("login"), "Login"),
-                 shiny::passwordInput(ns("password"), "Password:"),
-                 shiny::textOutput(ns("login_status"))) %>%
+  shiny::tagList(shiny::passwordInput(ns("private_token"), "Private Access Token"),
+                 shiny::textOutput(ns("login_status")),
+                 shiny::p("How to get a private access token? You have to create one manually in your Gitlab Web-Interface under Profile Settings - Access Tokens.")) %>%
     iff(login_button, shiny::tagAppendChild, shiny::actionButton(ns("login_button"), label = "Login"))
   
 }
@@ -40,6 +41,7 @@ glLoginInput <- function(id, login_button = TRUE) {
 glReactiveLogin <- function(input, output, session,
                             gitlab_url,
                             project = NULL,
+                            api_version = "v4",
                             success_message = "Gitlab login successful!",
                             failure_message = "Gitlab login failed!",
                             on_error = function(...) {
@@ -50,15 +52,15 @@ glReactiveLogin <- function(input, output, session,
     if(!is.null(input$login_button)) {
       input$login_button
     } else {
-      c(input$login, input$password)
+      c(input$login, input$private_token)
     }
   )
   
   shiny::eventReactive(input_changed(), {
     
     arglist <- list(gitlab_url = gitlab_url,
-                    login = input$login,
-                    password = input$password)
+                    private_token = input$private_token,
+                    api_version = api_version)
     
     tryCatch({
       gl_con <- if(is.null(project)) {
@@ -73,7 +75,7 @@ glReactiveLogin <- function(input, output, session,
       output$login_status <- shiny::renderText(paste(c(failure_message,
                                                        conditionMessage(e),
                                                        if(grepl("Unauthorized.*401", conditionMessage(e))) {
-                                                         "Probably the provided login/password combination is incorrect."}),
+                                                         "Probably the provided token is incorrect."}),
                                                      collapse = " "))
       on_error
     })

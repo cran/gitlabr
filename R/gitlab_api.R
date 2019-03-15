@@ -15,8 +15,12 @@
 #' @param debug if TRUE API URL and query will be printed, defaults to FALSE
 #' @param gitlab_con function to use for issuing API requests (e.g. as returned by 
 #' \code{\link{gitlab_connection}}
-#' @param page number of page of API response to get; if "all" (default), all pages are queried
-#' successively and combined.
+#' @param page number of page of API response to get; if "all" (default), all pages
+#' (up to max_page parameter!) are queried successively and combined.
+#' @param max_page maximum number of pages to retrieve. Defaults to 100. This is an upper limit
+#' to prevent gitlabr getting stuck in retrieving an unexpectedly high number of entries (e.g. of a
+#' project list). It can be set to NA/Inf to retrieve all available pages without limit, but this
+#' is recommended only under controlled circumstances.
 #' @param enforce_api_root if multiple pages are requested, the API root URL is ensured
 #' to be the same as in the original call for all calls using the "next page" URL returned
 #' by gitlab. This makes sense for security and in cases where gitlab is behind a reverse proxy
@@ -45,6 +49,7 @@ gitlab <- function(req,
                    debug = FALSE,
                    gitlab_con = "default",
                    page = "all",
+                   max_page = 100,
                    enforce_api_root = TRUE,
                    argname_verb = if (identical(verb, httr::GET) |
                                       identical(verb, httr::DELETE)) { "query" } else { "body" },
@@ -64,7 +69,7 @@ gitlab <- function(req,
                                              , "query:", paste(utils::capture.output(print((list(...)))), collapse = " "), " ", collapse = " "))); x })
     
     (if (page == "all") {list(...)} else { list(page = page, ...)}) %>%
-      pipe_into(argname_verb, gl_retry, verb = verb, url = url) %>%
+      pipe_into(argname_verb, verb, url = url) %>%
       http_error_or_content()   -> resp
     
     resp$ct %>%
@@ -73,16 +78,18 @@ gitlab <- function(req,
     
     if (page == "all") {
       private_token <- list(...)[["private_token"]]
-      while (length(resp$nxt) > 0) {
+      pages_retrieved <- 0L
+      while (length(resp$nxt) > 0 && is.finite(max_page) && pages_retrieved < max_page) {
         nxt_resp <- resp$nxt %>%
           as.character() %>%
           iff(enforce_api_root, stringr::str_replace, "^.*/api/v\\d/", api_root) %>%
           paste0("&private_token=", private_token) %>%
-          gl_retry() %>%
+          httr::GET() %>%
           http_error_or_content()
         resp$nxt <- nxt_resp$nxt
         resp$ct <- bind_rows(resp$ct, nxt_resp$ct %>%
                                iff(auto_format, json_to_flat_df))
+        pages_retrieved <- pages_retrieved + 1
       }
     }
     
@@ -113,24 +120,6 @@ gitlab <- function(req,
     do.call(gitlab_con, c(dot_args, gitlab_con = "self", ...)) %>%
       iff(debug, print)
   }
-}
-
-gl_retry <- function(url, verb = httr::GET, times = 3, wait_secs = 25, ...) {
-  
-  while(times > 0L) {
-    response <- verb(url = url, ...)
-    
-    if (httr::http_status(response)$category == "Server error") {
-      message("Encountered ", httr::http_status(response)$message, ". Retrying in ", wait_secs, " seconds.")
-      Sys.sleep(wait_secs)
-    } else {
-      times <- 0L
-    }
-    
-    times <- times - 1
-  }
-  
-  response
 }
 
 http_error_or_content <- function(response,

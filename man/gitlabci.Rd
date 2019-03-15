@@ -12,7 +12,8 @@ gl_default_ci_pipeline()
 
 use_gitlab_ci(pipeline = gl_default_ci_pipeline(),
   image = "rocker/r-devel:latest", push_to_remotes = c(),
-  path = ".gitlab-ci.yml", overwrite = TRUE, add_to_Rbuildignore = TRUE)
+  path = ".gitlab-ci.yml", overwrite = TRUE,
+  add_to_Rbuildignore = TRUE)
 }
 \arguments{
 \item{job_name}{Name of job template to get CI definition elements}

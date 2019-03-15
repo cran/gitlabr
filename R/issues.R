@@ -100,6 +100,10 @@ gl_new_issue <- function(title,
          ...)
 }
 
+#' @export
+#' @rdname gl_edit_issue
+gl_create_issue <- gl_new_issue
+
 #' Post a new issue or edit one
 #' 
 #' @param issue_id issue id (projectwide; for API v3 only you can use global iid when force_api_v3 is `TRUE` although this is not recommended!)
