@@ -2,26 +2,32 @@
 % Please edit documentation in R/global_env.R
 \name{set_gitlab_connection}
 \alias{set_gitlab_connection}
+\alias{get_gitlab_connection}
 \alias{unset_gitlab_connection}
-\title{Get/set a gitlab connection for all calls}
+\title{Get/set a GitLab connection for all calls}
 \usage{
 set_gitlab_connection(gitlab_con = NULL, ...)
+
+get_gitlab_connection()
 
 unset_gitlab_connection()
 }
 \arguments{
-\item{gitlab_con}{A function used for gitlab API calls, such
-as \code{\link{gitlab}} or as returned by \code{\link{gl_connection}}.}
+\item{gitlab_con}{A function used for GitLab API calls, such
+as \code{\link[=gitlab]{gitlab()}} or as returned by \code{\link[=gl_connection]{gl_connection()}}.}
 
 \item{...}{if gitlab_con is NULL, a new connection is created used the parameters
-is ... using \code{\link{gl_connection}}}
+is ... using \code{\link[=gl_connection]{gl_connection()}}}
+}
+\value{
+Used for side effects. Set or unset global connection settings.
 }
 \description{
-This sets the default value of \code{gitlab_con} 
-in a call to \code{\link{gitlab}}
+This sets the default value of \code{gitlab_con}
+in a call to \code{\link[=gitlab]{gitlab()}}
 }
 \examples{
 \dontrun{
-set_gitlab_connection("http://gitlab.example.com", private_token = "123####89")
+set_gitlab_connection("https://gitlab.com", private_token = Sys.getenv("GITLAB_COM_TOKEN"))
 }
 }

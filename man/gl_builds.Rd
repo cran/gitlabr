@@ -5,25 +5,30 @@
 \alias{gl_jobs}
 \alias{gl_builds}
 \alias{gl_latest_build_artifact}
-\title{Access the Gitlab CI builds}
+\title{Access the GitLab CI builds}
 \usage{
 gl_pipelines(project, ...)
 
 gl_jobs(project, ...)
 
-gl_builds(project, force_api_v3 = TRUE, ...)
+gl_builds(project, api_version = 4, ...)
 
-gl_latest_build_artifact(project, job, ref_name = "master",
-  save_to_file = tempfile(fileext = ".zip"), ...)
+gl_latest_build_artifact(
+  project,
+  job,
+  ref_name = get_main(),
+  save_to_file = tempfile(fileext = ".zip"),
+  ...
+)
 }
 \arguments{
 \item{project}{project name or id, required}
 
-\item{...}{passed on to \code{\link{gitlab}} API call}
+\item{...}{passed on to \code{\link[=gitlab]{gitlab()}} API call}
 
-\item{force_api_v3}{Since \code{gl_builds} is no longer working for Gitlab API v4,
-this must be set to TRUE in order to avoid deprecation warning and HTTP error.  It currently
-default to TRUE, but this will change with gitlabr 1.0.}
+\item{api_version}{Since \code{gl_builds} is no longer working for GitLab API v4,
+this must be set to "3" in order to avoid deprecation warning and HTTP error.  It currently
+default to "4" with deprecation message.´}
 
 \item{job}{Name of the job to get build artifacts from}
 
@@ -39,13 +44,18 @@ List the jobs with \code{gl_jobs}, the pipelines with \code{gl_pipelines} or
 download the most recent artifacts
 archive with \code{gl_latest_build_artifact}. For every branch and job combination
 only the most recent artifacts archive is available.
-\code{gl_builds} is the equivalent for gitlab API v3.
+\code{gl_builds} is the equivalent for GitLab API v3.
 }
 \examples{
 \dontrun{
-my_gitlab <- gl_connection(...) ## fill in login parameters
-my_gitlab(gl_pipelines, "test-project")
-my_gitlab(gl_jobs, "test-project")
-my_gitlab(gl_latest_build_artifact, "test-project", job = "build")
+# connect as a fixed user to a GitLab instance
+set_gitlab_connection(
+  gitlab_url = "https://gitlab.com",
+  private_token = Sys.getenv("GITLAB_COM_TOKEN"))
+
+# Get pipelines and jobs information
+gl_pipelines(project = "<<your-project-id>>")
+gl_jobs(project = "<<your-project-id>>")
+gl_latest_build_artifact(project = "<<your-project-id>>", job = "build")
 }
 }

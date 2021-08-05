@@ -2,22 +2,29 @@
 % Please edit documentation in R/issues.R
 \name{gl_to_issue_id}
 \alias{gl_to_issue_id}
-\title{Translate projectwide issue id to global gitlab API issue id}
+\title{Translate projectwide issue id to global GitLab API issue id}
 \usage{
-gl_to_issue_id(issue_id, project, force_api_v3 = TRUE, ...)
+gl_to_issue_id(project, issue_id, api_version = 3, ...)
 }
 \arguments{
-\item{issue_id}{projectwide issue id (as seen by e.g. gitlab website users)}
-
 \item{project}{project name or id}
 
-\item{force_api_v3}{Since this function is no longer necessary for Gitlab API v4,
-this must be set to TRUE in order to avoid deprecation warning and HTTP error. It currently
-default to TRUE, but this will change with gitlabr 1.0.}
+\item{issue_id}{projectwide issue id (as seen by e.g. GitLab website users)}
 
-\item{...}{passed on to \code{\link{gitlab}}}
+\item{api_version}{Since this function is no longer necessary for GitLab API v4,
+this must be set to 3 in order to avoid deprecation warning and HTTP error.}
+
+\item{...}{passed on to \code{\link[=gitlab]{gitlab()}}}
+}
+\value{
+Global GitLab API issue id
 }
 \description{
-This functions is only intended to be used with gitlab API v3. With v4, the
+This functions is only intended to be used with GitLab API v3. With v4, the
 global iid is no longer functional.
+}
+\examples{
+\dontrun{
+gl_to_issue_id(project = "<my-project>", issue_id = 1, api_version = 3)
+}
 }

@@ -3,14 +3,21 @@
 \name{glLoginInput}
 \alias{glLoginInput}
 \alias{glReactiveLogin}
-\title{Shiny module to login to gitlab API}
+\title{Shiny module to login to GitLab API}
 \usage{
 glLoginInput(id, login_button = TRUE)
 
-glReactiveLogin(input, output, session, gitlab_url, project = NULL,
-  api_version = "v4", success_message = "Gitlab login successful!",
-  failure_message = "Gitlab login failed!", on_error = function(...) { 
-     stop(failure_message) })
+glReactiveLogin(
+  input,
+  output,
+  session,
+  gitlab_url,
+  project = NULL,
+  api_version = 4,
+  success_message = "GitLab login successful!",
+  failure_message = "GitLab login failed!",
+  on_error = function(...) {     stop(failure_message) }
+)
 }
 \arguments{
 \item{id}{shiny namespace for the login module}
@@ -23,24 +30,27 @@ glReactiveLogin(input, output, session, gitlab_url, project = NULL,
 
 \item{session}{from shinyServer function, usually not user provided}
 
-\item{gitlab_url}{root URL of gitlab instance to login to}
+\item{gitlab_url}{root URL of GitLab instance to login to}
 
 \item{project}{if not NULL, a code{\link{gl_project_connection}} is created to this project}
 
-\item{api_version}{A character with value either "v3" or "v4" to specify the API version that should be used}
+\item{api_version}{A character with value either "3" or "4" to specify the API version that should be used}
 
-\item{success_message}{message text to be displayed in the UI on sucessful login}
+\item{success_message}{message text to be displayed in the UI on successful login}
 
 \item{failure_message}{message text to be displayed in the UI on login failure in addition to HTTP status}
 
-\item{on_error}{function to be returned instead of gitlab connection in case of login failure}
+\item{on_error}{function to be returned instead of GitLab connection in case of login failure}
+}
+\value{
+An input or output element for use in shiny UI.
 }
 \description{
 The UI contains a login and a password field as well as an (optional)
-login button. The server side function returns a reactive gitlab connection, just as \code{\link{gl_connection}}
-and \code{\link{gl_project_connection}}.
+login button. The server side function returns a reactive GitLab connection, just as \code{\link[=gl_connection]{gl_connection()}}
+and \code{\link[=gl_project_connection]{gl_project_connection()}}.
 }
 \details{
 \code{glLoginInput} is supposed to be used inside a \code{shinyUI}, while
-\code{glReactiveLogin} is supposed to be passed on to \code{\link[shiny]{callModule}}
+\code{glReactiveLogin} is supposed to be passed on to \code{\link[shiny:callModule]{shiny::callModule()}}
 }

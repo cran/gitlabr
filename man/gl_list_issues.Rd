@@ -5,24 +5,33 @@
 \alias{gl_get_issue}
 \title{Get issues of a project or user}
 \usage{
-gl_list_issues(project = NULL, issue_id = NULL, verb = httr::GET,
-  force_api_v3 = FALSE, ...)
+gl_list_issues(
+  project = NULL,
+  issue_id = NULL,
+  verb = httr::GET,
+  api_version = 4,
+  ...
+)
 
-gl_get_issue(issue_id, project, ...)
+gl_get_issue(project, issue_id, ...)
 }
 \arguments{
-\item{project}{project name or id, may be null for all issues created by user}
+\item{project}{project name or id, may be null for all issues created by user.
+If using the ID, set it as numeric, otherwise this is used as project name.}
 
-\item{issue_id}{optional issue id (projectwide; for API v3 only you can use global iid when force_api_v3 is `TRUE`)}
+\item{issue_id}{optional issue id (projectwide; for API v3 only you can use global iid when api_version is \code{3})}
 
-\item{verb}{ignored; all calls with this function will have \code{\link{gitlab}}'s
+\item{verb}{ignored; all calls with this function will have \code{\link[=gitlab]{gitlab()}}'s
 default verb \code{httr::GET}}
 
-\item{force_api_v3}{a switch to force deprecated gitlab API v3 behavior that allows filtering by global iid. If `TRUE`
+\item{api_version}{a switch to force deprecated GitLab API v3 behavior that allows filtering by global iid. If \code{3}
 filtering happens by global iid, if false, it happens by projectwide ID. For API v4, this must be FALSE (default)}
 
-\item{...}{further parameters passed on to \code{\link{gitlab}}, may be
+\item{...}{further parameters passed on to \code{\link[=gitlab]{gitlab()}}, may be
 state, labels, issue id, ...}
+}
+\value{
+Tibble of issues of the project with descriptive variables.
 }
 \description{
 Get issues of a project or user
@@ -33,9 +42,21 @@ using a project connection
 }
 \examples{
 \dontrun{
-my_project <- gl_project_connection(project = "testor"...) ## fill in login parameters
-my_project(gl_list_issues)
-my_project(gl_get_issue, 1)
-my_project(gl_new_issue, 1, "Implement new feature", description = "It should be awesome.")
+# Set the connection for the session
+set_gitlab_connection(
+  gitlab_url = test_url,
+  private_token = test_private_token
+)
+# list issues
+gl_list_issues("<<your-project-id>>", max_page = 1)
+# list opened issues
+gl_list_issues("<<your-project-id>>", state = "opened")
+# Get one issue
+gl_get_issue("<<your-project-id>>", issue_id = 1)
+# Create new issue
+gl_new_issue("<<your-project-id>>", title = "Implement new feature", 
+  description = "It should be awesome.")
+# Assign user to issue 1
+gl_assign_issue("<<your-project-id>>", issue_id = 1, assignee_id = "<<user-id>>")
 }
 }

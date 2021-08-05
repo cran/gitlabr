@@ -1,28 +1,38 @@
 Package: gitlabr
-Title: Access to the Gitlab API
-Version: 1.1.6
-Authors@R: person("Jirka", "Lewandowski", email = "jirka.lewandowski@wzb.eu", role = c("aut", "cre"))
+Title: Access to the 'Gitlab' API
+Version: 2.0.0
+Authors@R: 
+    c(person(given = "Jirka",
+             family = "Lewandowski",
+             role = "aut",
+             email = "jirka.lewandowski@wzb.eu"),
+      person(given = "Sébastien",
+             family = "Rochette",
+             role = c("aut", "cre"),
+             email = "sebastien@thinkr.fr",
+             comment = c(ORCID = "0000-0002-1565-9313")))
 Description: Provides R functions to access the API of the project and
-    repository management web application gitlab. For many common tasks (repository
-    file access, issue assignment and status, commenting) convenience wrappers
-    are provided, and in addition the full API can be used by specifying request
-    locations. Gitlab is open-source software and can be self-hosted or used on
-    gitlab.com.
-Depends: R (>= 3.1.2), magrittr
-Imports: dplyr (>= 0.4.3), stringr, base64enc, httr (>= 1.1.0), purrr
-        (>= 0.2.2), tibble (>= 1.1), utils, yaml, arpr
-Suggests: devtools (>= 1.8.0), roxygen2, testthat (>= 1.0.2), R.rsp,
-        knitr, shiny (>= 0.13.0)
-URL: https://blog.points-of-interest.cc/post/gitlabr/
-        http://doc.gitlab.com/ce/api/
-BugReports: https://github.com/jirkalewandowski/gitlabr/
-VignetteBuilder: R.rsp
+    repository management web application 'GitLab'. For many common tasks
+    (repository file access, issue assignment and status, commenting)
+    convenience wrappers are provided, and in addition the full API can be
+    used by specifying request locations. 'GitLab' is open-source software
+    and can be self-hosted or used on <https://about.gitlab.com>.
 License: GPL (>= 3)
+URL: https://statnmap.github.io/gitlabr/
+BugReports: https://github.com/statnmap/gitlabr/issues
+Depends: R (>= 3.1.2)
+Imports: arpr, base64enc, dplyr (>= 0.4.3), httr (>= 1.1.0), magrittr,
+        purrr (>= 0.2.2), shiny (>= 0.13.0), stringr, tibble (>= 1.1),
+        utils
+Suggests: knitr, rmarkdown, testthat (>= 1.0.2), yaml
+VignetteBuilder: knitr
+Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2019-03-14 19:20:14 UTC; jlewando
-Author: Jirka Lewandowski [aut, cre]
-Maintainer: Jirka Lewandowski <jirka.lewandowski@wzb.eu>
+Packaged: 2021-08-04 14:18:35 UTC; srochett
+Author: Jirka Lewandowski [aut],
+  Sébastien Rochette [aut, cre] (<https://orcid.org/0000-0002-1565-9313>)
+Maintainer: Sébastien Rochette <sebastien@thinkr.fr>
 Repository: CRAN
-Date/Publication: 2019-03-15 06:10:03 UTC
+Date/Publication: 2021-08-05 16:40:09 UTC
