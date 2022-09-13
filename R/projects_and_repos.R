@@ -15,6 +15,8 @@
 #' gl_get_projects(max_page = 1)
 #' # List users projects
 #' gl_list_user_projects(user_id = "<<user-id>>", max_page = 1)
+#' # List group projects
+#' gl_list_group_projects(group_id = "<<group-id>>", max_page = 1)
 #' }
 gl_list_projects <- function(...) {
   gitlab("projects", ...)
@@ -30,6 +32,14 @@ gl_get_projects <- gl_list_projects
 gl_list_user_projects <- function(user_id, ...) {
   gitlab(c("users", user_id, "projects"), ...)
 }
+
+#' @param group_id id of the group to list project from
+#' @export
+#' @rdname gl_list_projects
+gl_list_group_projects <- function(group_id, ...) {
+  gitlab(c("groups", group_id, "projects"), ...)
+}
+
 
 #' @param project project name or id
 #' @export
@@ -87,7 +97,13 @@ gl_get_project_id <- function(project_name, ...) {
              (sum(matches_path_with_namespace) == 0L &
                 matches_path | matches_name))
   
-  if (nrow(matching) > 1) {
+  if (nrow(matching) == 0) {
+    stop("There was no matching 'id' with your project name. ",
+         "Either it does not exist, or most probably, ", 
+         "it is not available in the first projects available to you. ",
+         "The name-matching is limited to the first pages of projects accessible. ",
+         "Please use directly the 'id' of your project.")
+  } else if (nrow(matching) > 1) {
     warning(paste(c("Multiple projects with given name or path found,",
                     "please use explicit name with namespace:",
                     matching$path_with_namespace,
@@ -100,7 +116,7 @@ gl_get_project_id <- function(project_name, ...) {
 }
 
 to_project_id <- function(x, ...) {
-  if (!is.na(as.numeric(x)) | is.numeric(x)) {
+  if (!is.na(suppressWarnings(as.numeric(x))) | is.numeric(x)) {
     as.numeric(x)
   } else {
     gl_get_project_id(x, ...)

@@ -1,3 +1,14 @@
+# gitlabr 2.0.1
+
+New features
+
+* Connection now uses the token as "header" instead of being sent clearly in the URL (#66, @ei-ds) 
+* `gl_list_group_projects()` lists projects of a group (@Yoshinobu-Ishizaki)
+
+Minor changes
+
+* doc HTML5 re-created with last version of roxygen2
+
 # gitlabr 2.0.0
 
 Breaking changes
