@@ -19,7 +19,8 @@ gl_delete_project(project)
 
 \item{...}{passed on to \code{\link[=gitlab]{gitlab()}} API call for "Create project"}
 
-\item{project}{The ID or URL-encoded path of the project.}
+\item{project}{id (preferred way) or name of the project.
+Not repository name.}
 }
 \value{
 A tibble with the project information. \code{gl_delete_project()} returns an empty tibble.
@@ -36,7 +37,7 @@ You can use extra parameters as proposed in the GitLab API:
 \examples{
 \dontrun{
 set_gitlab_connection(
-  gitlab_url = "https://gitlab.com", 
+  gitlab_url = "https://gitlab.com",
   private_token = Sys.getenv("GITLAB_COM_TOKEN")
 )
 # Create new project

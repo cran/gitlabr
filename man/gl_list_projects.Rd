@@ -25,7 +25,8 @@ gl_get_project(project, ...)
 
 \item{group_id}{id of the group to list project from}
 
-\item{project}{project name or id}
+\item{project}{id (preferred way) or name of the project.
+Not repository name.}
 }
 \value{
 tibble of each project with corresponding information
@@ -39,7 +40,7 @@ List projects information
 \examples{
 \dontrun{
 set_gitlab_connection(
-  gitlab_url = "https://gitlab.com", 
+  gitlab_url = "https://gitlab.com",
   private_token = Sys.getenv("GITLAB_COM_TOKEN")
 )
 # List all projects

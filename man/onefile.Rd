@@ -18,7 +18,8 @@ gl_push_file(
 gl_delete_file(project, file_path, commit_message, branch = get_main(), ...)
 }
 \arguments{
-\item{project}{Project name or id}
+\item{project}{id (preferred way) or name of the project.
+Not repository name.}
 
 \item{file_path}{path where to store file in gl_repository.
 If in subdirectory, the parent directory should exist.}
@@ -27,7 +28,8 @@ If in subdirectory, the parent directory should exist.}
 
 \item{commit_message}{Message to use for commit with new/updated file}
 
-\item{branch}{name of branch where to append newly generated commit with new/updated file}
+\item{branch}{name of branch where to append newly generated
+commit with new/updated file}
 
 \item{overwrite}{whether to overwrite files that already exist}
 
@@ -47,9 +49,10 @@ tmpfile <- tempfile(fileext = ".csv")
 write.csv(mtcars, file = tmpfile)
 # Push content to repository with a commit
 gl_push_file(
-  project = <<your-project-id>>,
+  project = "<<your-project-id>>",
   file_path = "test_data.csv",
   content = paste(readLines(tmpfile), collapse = "\n"),
-  commit_message = "New test data")
+  commit_message = "New test data"
+)
 }
 }

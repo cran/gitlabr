@@ -12,7 +12,7 @@
 
 
 
-<title>Breaking changes in {gitlabr} V2</title>
+<title>Alternative connections to projects</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -24,6 +24,22 @@ document.addEventListener('DOMContentLoaded', function(e) {
     if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
     a = h.attributes;
     while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
   }
 });
 </script>
@@ -51,7 +67,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -337,37 +352,49 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Breaking changes in {gitlabr} V2</h1>
+<h1 class="title toc-ignore">Alternative connections to projects</h1>
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gitlabr)</span></code></pre></div>
-<ul>
-<li>Default branch is named <code>main</code> whenever required.
-<ul>
-<li>This can be changed with
-<code>gitlabr_options_set(&quot;gitlabr.main&quot;, &quot;master&quot;)</code></li>
-</ul></li>
-<li>All project-specific functions get <code>project</code> as first
-parameter. Changes apply to:
-<ul>
-<li><code>gl_get_comments()</code>,<code>gl_to_issue_id()</code>,
-<code>gl_get_issue_comments()</code>,
-<code>gl_get_commit_comments()</code>, <code>gl_edit_comment()</code>,
-<code>gl_edit_issue_comment()</code>,
-<code>gl_edit_commit_comment()</code></li>
-<li><code>gl_repository()</code></li>
-<li><code>gl_get_issue()</code>, <code>gl_to_issue_id()</code>,
-<code>gl_new_issue()</code>, <code>gl_create_issue()</code>,
-<code>gl_edit_issue()</code>, <code>gl_close_issue()</code>,
-<code>gl_reopen_issue()</code>, <code>gl_assign_issue()</code>,
-<code>gl_unassign_issue()</code></li>
-</ul></li>
-<li>Changed use of <code>api_version = &quot;v4&quot;</code> by
-<code>api_version = 4</code></li>
-<li>Changed use of <code>force_api_v3 = TRUE</code> by
-<code>api_version = 4</code> for deprecation by default</li>
-</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(gitlabr)</span></code></pre></div>
+<div id="creating-connections" class="section level1">
+<h1>Creating connections</h1>
+<p>The recommended way to set a connection once and for all to a specific GitLab instance during your session is to use <code>set_gitlab_connection()</code> as specified in the quick start guide vignette.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">set_gitlab_connection</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>  <span class="dt">gitlab_url =</span> <span class="st">&quot;https://gitlab.com&quot;</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>  <span class="dt">private_token =</span> <span class="kw">Sys.getenv</span>(<span class="st">&quot;GITLAB_COM_TOKEN&quot;</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>)</span></code></pre></div>
+<p>However, if you are looking for connections to multiple GitLab instances in the same session or would like to set different accounts, you can define connections using <code>gl_connection()</code>.</p>
+<p>The idea of connections in ‘gitlabr’ is to generate functions with the same signature and capability as that of the central API call function <code>gitlab()</code>, but with certain parameters set to fixed values (<a href="https://en.wikipedia.org/wiki/Currying">“curried”</a>). This way these more specialized functions represent and provide the connection – for example – to a specific GitLab instance as a specific user. Such specialized functions can be created with the function <code>gl_connection()</code> and then used exactly as you would use <code>gitlab()</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>my_gitlab &lt;-<span class="st"> </span><span class="kw">gl_connection</span>(<span class="st">&quot;https://gitlab.com&quot;</span>,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>  <span class="dt">private_token =</span> <span class="kw">Sys.getenv</span>(<span class="st">&quot;GITLAB_COM_TOKEN&quot;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a><span class="kw">my_gitlab</span>(<span class="st">&quot;projects&quot;</span>)</span></code></pre></div>
+<p><code>gl_connection()</code> can take arbitrary parameters, returning a function that issues API requests with these parameter values.</p>
+<p>Similarly, <code>gl_project_connection()</code> can be used as a convenience wrapper to directly connect to a specific project in a GitLab instance.</p>
+<div id="function-in-function-style" class="section level2">
+<h2>function-in-function style</h2>
+<p>The recommended way to use ‘gitlabr’ functions is to directly use <code>gl_*()</code> function after setting the <code>set_gitlab_connection()</code>. For instance with <code>gl_create_issue()</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">gl_create_issue</span>(<span class="dt">project =</span> <span class="st">&quot;&lt;my-project-id&gt;&quot;</span>, <span class="dt">title =</span> <span class="st">&quot;Implement new feature&quot;</span>)</span></code></pre></div>
+<p>When using custom connections, as for calling the <code>gitlab()</code> function, the query is passed through the <code>req</code> argument as a vector of characters (e.g. “projects”).</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">my_gitlab</span>(<span class="dt">req =</span> <span class="kw">c</span>(<span class="st">&quot;projects&quot;</span>, <span class="st">&quot;&lt;my-project-id&gt;&quot;</span>, <span class="st">&quot;issues&quot;</span>))</span></code></pre></div>
+<p>Another option is to pass a <em>function</em> to the <code>req</code> argument that will then be called along with the additional parameters, using the connection for all API calls :</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="kw">my_gitlab</span>(gl_create_issue, <span class="dt">title =</span> <span class="st">&quot;Implement new feature&quot;</span>, <span class="dt">project =</span> <span class="st">&quot;&lt;my-project-id&gt;&quot;</span>)</span></code></pre></div>
+<p><code>gl_create_issue()</code> is an example function here, the principle style works for all convenience functions of ‘gitlabr’ starting with <code>gl_*()</code>.</p>
+<p>Some of the convenience functions perform additional transformation or renaming of parameters. Hence, the parameters given to the exemplary <code>my_gitlab(...)</code> call after the function should be valid according to the specified function’s documentation, and may differ from names used in the GitLab API itself, although this occurs only very rarely.</p>
+</div>
+<div id="define-a-custom-function-with-gitlab-and-a-temporary-connection" class="section level2">
+<h2>Define a custom function with <code>gitlab()</code> and a temporary connection</h2>
+<p>All API possibilities are not available in ‘gitlabr’. You can look at vignette “Go further: understand and build your functions” if you want to build your own API function.<br />
+Using a <code>gitlab()</code>, out of the recommended way for connection, requires using the <code>gitlab_con</code> parameter as follows.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">gitlab</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>  <span class="kw">c</span>(<span class="st">&quot;projects&quot;</span>, <span class="st">&quot;&lt;my-project-id&gt;&quot;</span>, <span class="st">&quot;issues&quot;</span>),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>  <span class="dt">gitlab_con =</span> <span class="kw">gl_connection</span>(<span class="st">&quot;https://gitlab.com&quot;</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>    <span class="dt">private_token =</span> <span class="kw">Sys.getenv</span>(<span class="st">&quot;GITLAB_COM_TOKEN&quot;</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>  )</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a>)</span></code></pre></div>
+</div>
+</div>
 
 
 

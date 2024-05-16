@@ -2,14 +2,11 @@
 % Please edit documentation in R/files.R
 \name{gl_repository}
 \alias{gl_repository}
-\alias{gl_list_files}
 \alias{gl_file_exists}
 \alias{gl_get_file}
 \title{Access to repository files in GitLab}
 \usage{
 gl_repository(project, req = c("tree"), ref = get_main(), ...)
-
-gl_list_files(project, ref = get_main(), ...)
 
 gl_file_exists(project, file_path, ref, ...)
 
@@ -23,20 +20,23 @@ gl_get_file(
 )
 }
 \arguments{
-\item{project}{name or id of project (not repository!)}
+\item{project}{id (preferred way) or name of the project.
+Not repository name.}
 
 \item{req}{request to perform on repository (everything after '/repository/'
 in GitLab API, as vector or part of URL)}
 
-\item{ref}{name of ref (commit branch or tag)}
+\item{ref}{name of ref (commit branch or tag). Default to 'main'.}
 
 \item{...}{passed on to \code{\link[=gitlab]{gitlab()}} API call}
 
 \item{file_path}{path to file}
 
-\item{to_char}{flag if output should be converted to char; otherwise it is of class raw}
+\item{to_char}{flag if output should be converted to char;
+otherwise it is of class raw}
 
-\item{api_version}{a switch to force deprecated GitLab API v3 behavior. See details section "API version" of \code{\link[=gl_connection]{gl_connection()}}}
+\item{api_version}{a switch to force deprecated GitLab API v3 behavior.
+See details section "API version" of \code{\link[=gl_connection]{gl_connection()}}}
 }
 \value{
 Tibble of files available in the branch with descriptive variables.
@@ -44,7 +44,8 @@ Tibble of files available in the branch with descriptive variables.
 \description{
 Access to repository files in GitLab
 
-For \code{gl_file_exists} dots are passed on to \code{\link[=gl_list_files]{gl_list_files()}} and GitLab API call
+For \code{gl_file_exists} dots are passed on to \code{\link[=gl_list_files]{gl_list_files()}}
+and GitLab API call
 
 Get a file from a GitLab repository
 }
@@ -52,19 +53,22 @@ Get a file from a GitLab repository
 \dontrun{
 # Set GitLab connection for examples
 set_gitlab_connection(
- gitlab_url = "https://gitlab.com",
- private_token = Sys.getenv("GITLAB_COM_TOKEN"))
+  gitlab_url = "https://gitlab.com",
+  private_token = Sys.getenv("GITLAB_COM_TOKEN")
+)
 
 # Access repository
 # _All files
-gl_repository(project = <<your-project-id>>)
+gl_repository(project = "<<your-project-id>>")
 # _All contributors
-gl_repository(project = <<your-project-id>>, "contributors")
-# _List files
-gl_list_files(project = <<your-project-id>>)
+gl_repository(project = "<<your-project-id>>", "contributors")
 # _Get content of one file
-gl_get_file(project = <<your-project-id>>, file_path = "README.md")
+gl_get_file(project = "<<your-project-id>>", file_path = "README.md")
 # _Test if file exists
-gl_file_exists(project = <<your-project-id>>, file_path = "README.md", ref = "main")
+gl_file_exists(
+  project = "<<your-project-id>>",
+  file_path = "README.md",
+  ref = "main"
+)
 }
 }

@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -37,7 +37,7 @@ knitr::opts_chunk$set(
 #  content_md <- paste("
 #  # testor.main
 #  
-#  Repository to test R package [{gitlabr}](https://github.com/statnmap/gitlabr)
+#  Repository to test R package ['gitlabr'](https://github.com/statnmap/gitlabr)
 #  ")
 #  
 #  # Push file with a commit
@@ -47,8 +47,8 @@ knitr::opts_chunk$set(
 #    content = content_md,
 #    commit_message = "Update README",
 #    branch = main_branch,
-#    overwrite = TRUE)
-#  
+#    overwrite = TRUE
+#  )
 
 ## -----------------------------------------------------------------------------
 #  # Create the new branch
@@ -73,8 +73,8 @@ knitr::opts_chunk$set(
 #    content = content_ci,
 #    commit_message = "Add CI to the main branch",
 #    branch = main_branch,
-#    overwrite = TRUE)
-#  
+#    overwrite = TRUE
+#  )
 
 ## -----------------------------------------------------------------------------
 #  # Get list of commits in default branch
@@ -83,22 +83,24 @@ knitr::opts_chunk$set(
 #  gl_comment_commit(
 #    project = project_info$id,
 #    id = commits_in_main$id[1],
-#    text = "Write a comment")
+#    text = "Write a comment"
+#  )
 
 ## -----------------------------------------------------------------------------
 #  # Create an issue
 #  issue_info <- gl_create_issue(
 #    project = project_info$id,
 #    title = "Dont close issue 1",
-#    description = "An example issue to not close for tests")
+#    description = "An example issue to not close for tests"
+#  )
 #  
 #  # Create a comment to the issue
 #  gl_comment_issue(
 #    project = project_info$id,
 #    id = issue_info$iid,
-#    text = "A comment on issue to not close")
-#  
+#    text = "A comment on issue to not close"
+#  )
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  gl_delete_project(project_id)
 

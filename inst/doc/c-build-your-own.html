@@ -12,7 +12,7 @@
 
 
 
-<title>Go further: understand and build your functions</title>
+<title>Go further: understand and build your own functions</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -24,6 +24,22 @@ document.addEventListener('DOMContentLoaded', function(e) {
     if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
     a = h.attributes;
     while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
   }
 });
 </script>
@@ -51,7 +67,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -337,104 +352,65 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Go further: understand and build your
-functions</h1>
+<h1 class="title toc-ignore">Go further: understand and build your own functions</h1>
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gitlabr)</span></code></pre></div>
-<p>There are more locations and actions that can be accessed through the
-GitLab API. See the <a href="https://docs.gitlab.com/ce/api/">documentation of the GitLab
-API</a> for this.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(gitlabr)</span></code></pre></div>
+<p>There are more locations and actions that can be accessed through the GitLab API. See the <a href="https://docs.gitlab.com/ce/api/">documentation of the GitLab API</a> for this.</p>
 <div id="api-calls" class="section level1">
 <h1>API calls</h1>
-<p>This section describes how R function calls are translated into HTTP
-requests to the GitLab API ({gitlabr}’s “low level interface”). For a
-documentation using {gitlabr} without knowledge of the GitLab API
-({gitlabr}’s “high level interface”), see the <a href="#quick-start-example">“Quick Start Example”</a> above or refer to
-the individual function documentation in the Reference section of
-{gitlabr}’s pkgdown <a href="https://statnmap.github.io/gitlabr/reference/index.html">site</a>.</p>
-<p>Currently ({gitlabr} &gt;= 1.1.6) GitLab API v4 is supported. Support
-for GitLab API v3 (for GitLab version &lt; 9.0) is still included via
-flag parameters, but is no longer maintained. For details see the
-section “API version” of the documentation of
-<code>gl_connection()</code>.</p>
-<p>The core function of the low level interface is
-<code>gitlab()</code>, with the help of which arbitrary calls to the
-GitLab API can be formulated. It takes as required arguments the request
-location as a character vector, API endpoint URL and HTTP verb and
-passes additional arguments as query parameters (keeping their names) on
-to the API request.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gitlab</span>(<span class="fu">c</span>(<span class="st">&quot;projects&quot;</span>, <span class="dv">12</span>, <span class="st">&quot;issues&quot;</span>), </span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">api_root =</span> <span class="st">&quot;https://gitlab.com/api/v4&quot;</span>,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">private_token =</span> <span class="st">&quot;XXX&quot;</span>, <span class="co"># authentication for API</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">verb =</span> httr<span class="sc">::</span>GET,  <span class="co"># defaults to GET, but POST, PUT, DELETE can be used likewise</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">state =</span> <span class="st">&quot;active&quot;</span>) <span class="co"># additional parameters (...) for the query</span></span></code></pre></div>
+<p>This section describes how R function calls are translated into HTTP requests to the GitLab API (‘gitlabr’ “low level interface”). For a documentation using ‘gitlabr’ without knowledge of the GitLab API (‘gitlabr’ “high level interface”), see the <a href="#quick-start-example">“Quick Start Example”</a> above or refer to the individual function documentation in the Reference section of ‘gitlabr’ pkgdown <a href="https://thinkr-open.github.io/gitlabr/reference/index.html">site</a>.</p>
+<p>Currently (‘gitlabr’ &gt;= 1.1.6) GitLab API v4 is supported. Support for GitLab API v3 (for GitLab version &lt; 9.0) is still included via flag parameters, but is no longer maintained. For details see the section “API version” of the documentation of <code>gl_connection()</code>.</p>
+<p>The core function of the low level interface is <code>gitlab()</code>, with the help of which arbitrary calls to the GitLab API can be formulated. It takes as required arguments the request location as a character vector, API endpoint URL and HTTP verb and passes additional arguments as query parameters (keeping their names) on to the API request.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">gitlab</span>(<span class="kw">c</span>(<span class="st">&quot;projects&quot;</span>, <span class="dv">12</span>, <span class="st">&quot;issues&quot;</span>),</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>  <span class="dt">api_root =</span> <span class="st">&quot;https://gitlab.com/api/v4&quot;</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>  <span class="dt">private_token =</span> <span class="st">&quot;XXX&quot;</span>, <span class="co"># authentication for API</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>  <span class="dt">verb =</span> httr<span class="op">::</span>GET, <span class="co"># defaults to GET, but POST, PUT, DELETE can be used likewise</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>  <span class="dt">state =</span> <span class="st">&quot;active&quot;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>) <span class="co"># additional parameters (...) for the query</span></span></code></pre></div>
 <p>translates to</p>
 <pre><code>GET https://gitlab.com/api/v4/projects/12/issues?state=active&amp;private_token=XXX</code></pre>
-<p>This way, any request documented in the <a href="https://docs.gitlab.com/ce/api">GitLab API documentation</a> can
-be issued from {gitlabr}.</p>
-<p>The high level interface consists of a number of functions that each
-have additional arguments from which the request location is
-constructed, while all other arguments are simply passed on to
-<code>gitlab()</code>. For example:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gl_edit_issue</span>(<span class="at">project =</span> <span class="st">&quot;test-project&quot;</span>, <span class="dv">12</span>, <span class="at">description =</span> <span class="st">&quot;Really cool new feature&quot;</span>,</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>           <span class="at">api_root =</span> <span class="st">&quot;...&quot;</span>, <span class="at">private_token =</span> <span class="st">&quot;XXX&quot;</span>)</span></code></pre></div>
+<p>This way, any request documented in the <a href="https://docs.gitlab.com/ce/api">GitLab API documentation</a> can be issued from ‘gitlabr’.</p>
+<p>The high level interface consists of a number of functions that each have additional arguments from which the request location is constructed, while all other arguments are simply passed on to <code>gitlab()</code>. For example:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="kw">gl_edit_issue</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>  <span class="dt">project =</span> <span class="st">&quot;test-project&quot;</span>, <span class="dv">12</span>, <span class="dt">description =</span> <span class="st">&quot;Really cool new feature&quot;</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a>  <span class="dt">api_root =</span> <span class="st">&quot;...&quot;</span>, <span class="dt">private_token =</span> <span class="st">&quot;XXX&quot;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>)</span></code></pre></div>
 <p>does nothing but</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gitlab</span>(<span class="fu">c</span>(<span class="st">&quot;projects&quot;</span>,</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>         <span class="dv">4</span>,  <span class="co"># numeric id of test-project is found by search</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">&quot;issues&quot;</span>,</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>         <span class="dv">12</span>),</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">description =</span> <span class="st">&quot;Really cool new feature&quot;</span>,</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">api_root =</span> <span class="st">&quot;...&quot;</span>,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">private_token =</span> <span class="st">&quot;XXX&quot;</span>,</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">verb =</span> httr<span class="sc">::</span>PUT)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">gitlab</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>  <span class="kw">c</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>    <span class="st">&quot;projects&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>    <span class="dv">4</span>, <span class="co"># numeric id of test-project is found by search</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>    <span class="st">&quot;issues&quot;</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>    <span class="dv">12</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>  ),</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>  <span class="dt">description =</span> <span class="st">&quot;Really cool new feature&quot;</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>  <span class="dt">api_root =</span> <span class="st">&quot;...&quot;</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>  <span class="dt">private_token =</span> <span class="st">&quot;XXX&quot;</span>,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>  <span class="dt">verb =</span> httr<span class="op">::</span>PUT</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a>)</span></code></pre></div>
 <p>and hence translates to</p>
 <pre><code>PUT .../projects/4/issues/12?private_token=XXX?description=Really%20cool%20new%20feature</code></pre>
-<p>To spare you the repetitive task of specifying the API root and key
-in every call, you can use <code>gitlab_connection()</code> as described
-below.</p>
-<p>{gitlabr} is implemented following the functional programming
-paradigm. Several of its functions return or accept functions as
-arguments. This results in huge flexibility in how API requests using
-{gitlabr} can be formulated in your R code. Three major styles are
-described below, after introducing the central mechanism of creating
-more specific API connection functions.</p>
+<p>To spare you the repetitive task of specifying the API root and key in every call, you can use <code>set_gitlab_connection()</code> as described in the “quick start guide” vignette.</p>
 </div>
 <div id="writing-custom-gitlab-request-functions" class="section level1">
 <h1>Writing custom gitlab request functions</h1>
-<p>It is very easy to write your own convenience wrappers for accessing
-API endpoints you wish and make sure they fully integrate into {gitlabr}
-and work conveniently with all connection and call idioms described in
-this vignette. The only requirement to your function is that it executes
-an R function call to <code>gitlab()</code> (or another convenience
-function) to which the <code>...</code> argument is passed on.</p>
-<p>That is, a simple function to block users directly from R is as
-simple as:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>gl_block_user <span class="ot">&lt;-</span> <span class="cf">function</span>(uid, ...) {</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gitlab</span>(<span class="fu">c</span>(<span class="st">&quot;users&quot;</span>, uid, <span class="st">&quot;block&quot;</span>),  <span class="do">## for API side documentation see:</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">verb =</span> httr<span class="sc">::</span>PUT, <span class="do">## https://docs.gitlab.com/ce/api/users.html#block-user</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>         ...) <span class="do">## don&#39;t forget the dots to make {gitlabr} features fully available</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>It is very easy to write your own convenience wrappers for accessing API endpoints you wish and make sure they fully integrate into ‘gitlabr’ and work conveniently with all connection and call idioms described in this vignette. The only requirement to your function is that it executes an R function call to <code>gitlab()</code> (or another convenience function) to which the <code>...</code> argument is passed on.</p>
+<p>That is, a simple function to block users directly from R is as simple as:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>gl_block_user &lt;-<span class="st"> </span><span class="cf">function</span>(uid, ...) {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>  <span class="kw">gitlab</span>(<span class="kw">c</span>(<span class="st">&quot;users&quot;</span>, uid, <span class="st">&quot;block&quot;</span>), <span class="co">## for API side documentation see:</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>    <span class="dt">verb =</span> httr<span class="op">::</span>PUT, <span class="co">## https://docs.gitlab.com/ce/api/users.html#block-user</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>    ...</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>  ) <span class="co">## don&#39;t forget the dots to make &#39;gitlabr&#39; features fully available</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a>}</span></code></pre></div>
 <p>More hints for more convenience:</p>
 <ul>
-<li>To be consistent with another important {gitlabr} principle, make
-sure your function returns a <code>tibble</code> (which it does if you
-simply pass up the return value of <code>gitlab()</code> or one of the
-package’s own convenience functions). <code>gitlab()</code> has some
-heuristics to format the API response to a <code>tibble</code>, if these
-fail for your specific request, you can pass
-<code>auto_format = FALSE</code> and format the response manually.</li>
-<li>To translate project names to numeric ids automatically, you can use
-{gitlabr}’s internal functions <code>proj_req()</code> translating the
-request location.</li>
-<li>To translate user-visible project-wide issue ids to global ids used
-by the GitLab API, you can use {gitlabr}’s internal function
-<code>to_issue_id()</code> when constructing the request.</li>
+<li>To be consistent with another important ‘gitlabr’ principle, make sure your function returns a <code>tibble</code> (which it does if you simply pass up the return value of <code>gitlab()</code> or one of the package’s own convenience functions). <code>gitlab()</code> has some heuristics to format the API response to a <code>tibble</code>, if these fail for your specific request, you can pass <code>auto_format = FALSE</code> and format the response manually.</li>
+<li>To translate project names to numeric ids automatically, you can use ’gitlabr’s internal functions <code>proj_req()</code> translating the request location.</li>
+<li>To translate user-visible project-wide issue ids to global ids used by the GitLab API, you can use ‘gitlabr’ internal function <code>to_issue_id()</code> when constructing the request.</li>
 </ul>
-<p>And last but not least, if you’ve written a convenience wrapper for
-yourself, keep in mind that it might be of help to many others and you
-can contribute it to {gitlabr} on <a href="https://github.com/statnmap/gitlabr">https://github.com/statnmap/gitlabr</a>.</p>
+<p>And last but not least, if you’ve written a convenience wrapper for yourself, keep in mind that it might be of help to many others and you can contribute it to ‘gitlabr’ on <a href="https://github.com/ThinkR-open/gitlabr">https://github.com/ThinkR-open/gitlabr</a>.</p>
 </div>
 
 

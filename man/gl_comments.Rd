@@ -28,7 +28,8 @@ gl_edit_issue_comment(project, ...)
 gl_edit_commit_comment(project, ...)
 }
 \arguments{
-\item{project}{project name or id}
+\item{project}{id (preferred way) or name of the project.
+Not repository name.}
 
 \item{object_type}{one of "issue" or "commit". Snippets and merge_requests are not implemented yet.}
 
@@ -66,12 +67,18 @@ comment of an issue.
 \examples{
 \dontrun{
 # fill in login parameters
-set_gitlab_connection(gitlab_url = "https://gitlab.com",
-  private_token = Sys.getenv("GITLAB_COM_TOKEN"))
+set_gitlab_connection(
+  gitlab_url = "https://gitlab.com",
+  private_token = Sys.getenv("GITLAB_COM_TOKEN")
+)
 gl_get_comments(project = "<<your-project-id>>", object_type = "issue", 1)
-gl_get_comments(project = "<<your-project-id>>", "commit", 
-  id = "8ce5ef240123cd78c1537991e5de8d8323666b15")
-gl_comment_issue(project = "<<your-project-id>>", 1, 
-  text = "Almost done!")
+gl_get_comments(
+  project = "<<your-project-id>>", "commit",
+  id = "8ce5ef240123cd78c1537991e5de8d8323666b15"
+)
+gl_comment_issue(
+  project = "<<your-project-id>>", 1,
+  text = "Almost done!"
+)
 }
 }

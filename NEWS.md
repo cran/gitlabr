@@ -1,17 +1,47 @@
+# gitlabr 2.1.0
+
+## Breaking changes
+
+* `use_gitlab_ci()` does not use `repo_name` anymore as "rocker" images fix CRAN to a specific date.
+* Functions deprecated since version 0.7 are removed
+* Transfer ownership of the project to ThinkR-open
+
+## New features
+
+* `use_gitlab_ci()` allows to decide whether to update R packages during the CI pipeline
+* Add vignette to explain how to use 'gitlabr' with GitLab CI
+* `gl_new_group()`, `gl_edit_group()`, `gl_delete_group()`, `gl_list_groups()`, `gl_list_sub_groups()` to deal with groups on a GitLab instance (@mpolano)
+* `gl_new_subgroup()` to create a subgroup in a group (@margotbrd)
+* `gl_delete_file()` to delete a file in a repository
+* `gl_list_project_members()` and `gl_list_group_members` to retrieve members of a project or a group (#61, @datawookie)
+* `gitlab()` queries allow for a vector of parameters to be passed to the API. This is needed when the API asks for an array (@klmr)
+
+## Minor changes
+
+* `multilist_to_tibble()` transforms a deep structured nested list from an API into a tibble (#86, @statnmap, @ymansiaux)
+
+## Bug fixes
+
+* `gl_file_exists()`, `gl_list_files()`, `gl_push_file()`, `gl_delete_file()` now work with files in subdirectories
+* Fix handling file path in sub-directories in `gl_push_file()` (#73, #111)
+* Fix combination of `page` and `max_page` for infinite pagination (#90)
+* Fix `auto_format=FALSE` (#82)
+
 # gitlabr 2.0.1
 
-New features
+## New features
 
 * Connection now uses the token as "header" instead of being sent clearly in the URL (#66, @ei-ds) 
 * `gl_list_group_projects()` lists projects of a group (@Yoshinobu-Ishizaki)
 
-Minor changes
+## Minor changes
 
 * doc HTML5 re-created with last version of roxygen2
 
+
 # gitlabr 2.0.0
 
-Breaking changes
+## Breaking changes
 
 * Default branch is named `main` whenever required.
   + This can be changed with `gitlabr_options_set("gitlabr.main", "master")`
@@ -24,14 +54,14 @@ Breaking changes
 * Changed use of `api_version = "v4"` by `api_version = 4`
 * Changed use of `force_api_v3 = TRUE` by `api_version = 4` for deprecation by default
 
-Major
+## Major
 
 * New use of `use_gitlab_ci()` with pre-defined templates
 * Add new functions to manage projects: `gl_get_project()`, `gl_new_project()`, `gl_edit_project()`,
  `gl_delete_project()`
 * Update documentation: recommend using `gl_*` functions
 
-Minor
+## Minor
 
 * `gl_archive()` is used to archive a project (not to download an archive)
 * fix use of `max_page` with `gl_()` functions calling `gitlab()`
@@ -49,7 +79,7 @@ Minor
 
 # gitlabr 0.9 (2017-04-24)
 
-* Support for Gitlab API v4 (default from Gitlab version 9.0 onward) was added. Gitlab API v4 is now the default used by gitlabr, but using the old API (v3) is still possible, see details section "API version" of the documentation of `gl_connection`.
+* Support for GitLab API v4 (default from GitLab version 9.0 onward) was added. GitLab API v4 is now the default used by gitlabr, but using the old API (v3) is still possible, see details section "API version" of the documentation of `gl_connection`.
   * Several convenience functions now have a `force_api_v3` parameter to force old API version logic.
   * Issues are now identified by project-wide id and not global iid, according to API v4 logic.
   * Function `gl_builds` was replaced by `gl_pipelines` and `gl_jobs` to reflect API v4 logic.
@@ -60,7 +90,7 @@ Minor
 
 # gitlabr 0.8
 
-*There is no gitlabr 0.8. Version number 0.9 was used to align with Gitlab version 9.0, for which this version is appropriate.*
+*There is no gitlabr 0.8. Version number 0.9 was used to align with GitLab version 9.0, for which this version is appropriate.*
 
 # gitlabr 0.7 (2017-03-06)
 

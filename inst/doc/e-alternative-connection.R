@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -11,11 +11,13 @@ knitr::opts_chunk$set(
 ## -----------------------------------------------------------------------------
 #  set_gitlab_connection(
 #    gitlab_url = "https://gitlab.com",
-#    private_token = Sys.getenv("GITLAB_COM_TOKEN"))
+#    private_token = Sys.getenv("GITLAB_COM_TOKEN")
+#  )
 
 ## ----eval = FALSE-------------------------------------------------------------
 #  my_gitlab <- gl_connection("https://gitlab.com",
-#                             private_token = Sys.getenv("GITLAB_COM_TOKEN"))
+#    private_token = Sys.getenv("GITLAB_COM_TOKEN")
+#  )
 #  my_gitlab("projects")
 
 ## ----echo = FALSE, eval = FALSE, message=FALSE--------------------------------
@@ -37,6 +39,7 @@ knitr::opts_chunk$set(
 #  gitlab(
 #    c("projects", "<my-project-id>", "issues"),
 #    gitlab_con = gl_connection("https://gitlab.com",
-#                             private_token = Sys.getenv("GITLAB_COM_TOKEN"))
+#      private_token = Sys.getenv("GITLAB_COM_TOKEN")
+#    )
 #  )
 

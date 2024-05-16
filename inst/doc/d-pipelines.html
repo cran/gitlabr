@@ -12,7 +12,7 @@
 
 
 
-<title>Alternative connections to projects</title>
+<title>Create gitlab-ci pipelines</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -24,6 +24,22 @@ document.addEventListener('DOMContentLoaded', function(e) {
     if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
     a = h.attributes;
     while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
   }
 });
 </script>
@@ -51,7 +67,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -337,82 +352,32 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Alternative connections to projects</h1>
+<h1 class="title toc-ignore">Create gitlab-ci pipelines</h1>
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gitlabr)</span></code></pre></div>
-<div id="creating-connections" class="section level1">
-<h1>Creating connections</h1>
-<p>The recommended way to set a connection once and for all to a
-specific GitLab instance during your session is to use
-<code>set_gitlab_connection()</code> as specified in the quick start
-guide vignette.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set_gitlab_connection</span>(</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">gitlab_url =</span> <span class="st">&quot;https://gitlab.com&quot;</span>,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">private_token =</span> <span class="fu">Sys.getenv</span>(<span class="st">&quot;GITLAB_COM_TOKEN&quot;</span>))</span></code></pre></div>
-<p>However, if you are looking for connections to multiple GitLab
-instances in the same session or would like to set different accounts,
-you can define connections using <code>gl_connection()</code>.</p>
-<p>The idea of connections in {gitlabr} is to generate functions with
-the same signature and capability as that of the central API call
-function <code>gitlab()</code>, but with certain parameters set to fixed
-values (<a href="https://en.wikipedia.org/wiki/Currying">“curried”</a>).
-This way these more specialized functions represent and provide the
-connection – for example – to a specific GitLab instance as a specific
-user. Such specialized functions can be created with the function
-<code>gl_connection()</code> and then used exactly as you would use
-<code>gitlab()</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>my_gitlab <span class="ot">&lt;-</span> <span class="fu">gl_connection</span>(<span class="st">&quot;https://gitlab.com&quot;</span>,</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                           <span class="at">private_token =</span> <span class="fu">Sys.getenv</span>(<span class="st">&quot;GITLAB_COM_TOKEN&quot;</span>))</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">my_gitlab</span>(<span class="st">&quot;projects&quot;</span>)</span></code></pre></div>
-<p><code>gl_connection()</code> can take arbitrary parameters, returning
-a function that issues API requests with these parameter values.</p>
-<p>Similarly, <code>gl_project_connection()</code> can be used as a
-convenience wrapper to directly connect to a specific project in a
-GitLab instance.</p>
-<div id="function-in-function-style" class="section level2">
-<h2>function-in-function style</h2>
-<p>The recommended way to use {gitlabr} functions is to directly use
-<code>gl_*()</code> function after setting the
-<code>set_gitlab_connection()</code>. For instance with
-<code>gl_create_issue()</code>.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gl_create_issue</span>(<span class="at">project =</span> <span class="st">&quot;&lt;my-project-id&gt;&quot;</span>, <span class="at">title =</span> <span class="st">&quot;Implement new feature&quot;</span>)</span></code></pre></div>
-<p>When using custom connections, as for calling the
-<code>gitlab()</code> function, the query is passed through the
-<code>req</code> argument as a vector of characters
-(e.g. “projects”).</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_gitlab</span>(<span class="at">req =</span> <span class="fu">c</span>(<span class="st">&quot;projects&quot;</span>, <span class="st">&quot;&lt;my-project-id&gt;&quot;</span>, <span class="st">&quot;issues&quot;</span>))</span></code></pre></div>
-<p>Another option is to pass a <em>function</em> to the <code>req</code>
-argument that will then be called along with the additional parameters,
-using the connection for all API calls :</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_gitlab</span>(gl_create_issue, <span class="at">title =</span> <span class="st">&quot;Implement new feature&quot;</span>, <span class="at">project =</span> <span class="st">&quot;&lt;my-project-id&gt;&quot;</span>)</span></code></pre></div>
-<p><code>gl_create_issue()</code> is an example function here, the
-principle style works for all convenience functions of {gitlabr}
-starting with <code>gl_*()</code>.</p>
-<p>Some of the convenience functions perform additional transformation
-or renaming of parameters. Hence, the parameters given to the exemplary
-<code>my_gitlab(...)</code> call after the function should be valid
-according to the specified function’s documentation, and may differ from
-names used in the GitLab API itself, although this occurs only very
-rarely.</p>
-</div>
-<div id="define-a-custom-function-with-gitlab-and-a-temporary-connection" class="section level2">
-<h2>Define a custom function with <code>gitlab()</code> and a temporary
-connection</h2>
-<p>All API possibilities are not available in {gitlabr}. You can look at
-vignette “Go further: understand and build your functions” if you want
-to build your own API function.<br />
-Using a <code>gitlab()</code>, out of the recommended way for
-connection, requires using the <code>gitlab_con</code> parameter as
-follows.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">gitlab</span>(</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;projects&quot;</span>, <span class="st">&quot;&lt;my-project-id&gt;&quot;</span>, <span class="st">&quot;issues&quot;</span>),</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">gitlab_con =</span> <span class="fu">gl_connection</span>(<span class="st">&quot;https://gitlab.com&quot;</span>,</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                           <span class="at">private_token =</span> <span class="fu">Sys.getenv</span>(<span class="st">&quot;GITLAB_COM_TOKEN&quot;</span>))</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
-</div>
-</div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">library</span>(gitlabr)</span></code></pre></div>
+<p>With <code>gitlabr::use_gitlab_ci()</code> you can create a <code>.gitlab-ci.yml</code> file in the root of your project. This file is used by GitLab CI/CD to manage your pipelines.</p>
+<p>In ‘gitlabr’, there are different types of templates available.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="co"># Templates available</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="kw">list.files</span>(<span class="kw">system.file</span>(<span class="st">&quot;gitlab-ci&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;gitlabr&quot;</span>))</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a><span class="co">#&gt; [1] &quot;bookdown-production.yml&quot;         &quot;bookdown.yml&quot;                   </span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a><span class="co">#&gt; [3] &quot;check-coverage-pkgdown-renv.yml&quot; &quot;check-coverage-pkgdown.yml&quot;</span></span></code></pre></div>
+<p>Types available are:</p>
+<ul>
+<li><code>&quot;check-coverage-pkgdown&quot;</code>: Check package along with Code coverage with ‘covr’ and ‘pkgdown’ site on GitLab Pages</li>
+<li><code>&quot;check-coverage-pkgdown-renv&quot;</code>: Check package built in a fixed ‘renv’ state along with Code coverage with ‘covr’ and ‘pkgdown’ site on GitLab Pages.</li>
+<li><code>&quot;bookdown&quot;</code>: Build ‘bookdown’ HTML and PDF site on GitLab Pages</li>
+<li><code>&quot;bookdown-production&quot;</code>: Build ‘bookdown’ HTML and PDF site on GitLab Pages. Where there will be a version of the book for each branch deployed. See <a href="https://github.com/statnmap/GitLab-Pages-Deploy" class="uri">https://github.com/statnmap/GitLab-Pages-Deploy</a> for setup details.</li>
+</ul>
+<p>Hence, if you develop a R package, you can use the <code>&quot;check-coverage-pkgdown&quot;</code> template to check your package and deploy the documentation on GitLab Pages. Default image used is <code>image = &quot;rocker/verse:latest&quot;</code>.<br />
+You can change parameters of <code>use_gitlab_ci()</code> but there shouldn’t be reasons to change the “.gitlab-ci.yml” file.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="co"># Create a .gitlab-ci.yml file with the template</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>gitlabr<span class="op">::</span><span class="kw">use_gitlab_ci</span>(<span class="dt">template =</span> <span class="st">&quot;check-coverage-pkgdown&quot;</span>)</span></code></pre></div>
+<p>If you wrote a bookdown book, you can use the <code>&quot;bookdown&quot;</code> template to build the HTML and PDF site on GitLab Pages. The CI will detect packages used in the book and install them.</p>
+<p>In the “.gitlab-ci.yml” file, you can choose the output of your book. By default, the “bookdown::bs4_book”, “bookdown::gitbook” (commented), “bookdown::pdf_book” and “pagedown::html_paged” outputs are created. You can comment the outputs you don’t want to build.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="co"># Create a .gitlab-ci.yml file with the template</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>gitlabr<span class="op">::</span><span class="kw">use_gitlab_ci</span>(<span class="dt">template =</span> <span class="st">&quot;bookdown&quot;</span>)</span></code></pre></div>
 
 
 

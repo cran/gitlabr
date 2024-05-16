@@ -1,0 +1,75 @@
+image: rocker/verse:latest
+
+variables:
+  GIT_DEPTH: 10
+  # R_LIBS is not empty in rocker images
+  R_LIBS: ${CI_PROJECT_DIR}/ci/lib:${R_LIBS}
+  R_LIBS_USER: ${CI_PROJECT_DIR}/ci/lib
+  SITE_BY_BRANCH: "TRUE"
+
+cache:
+  key: cache-default
+  paths:
+      - ${R_LIBS_USER}
+
+stages:
+  - book-create
+  - prepare-deploy
+  - deploy
+
+book-branch:
+    stage: book-create
+    except:
+        - gh-pages
+    script:
+        - echo "options(repos = c(CRAN = '${REPO_NAME}'), download.file.method = 'libcurl')" >> ${R_HOME}/etc/Rprofile.site
+        - echo "Library path for packages :" $R_LIBS_USER
+        - mkdir -p $R_LIBS_USER
+        - Rscript -e 'if(!requireNamespace("pak", quietly = TRUE)) {install.packages("pak")}'
+        - Rscript -e 'pak::pkg_install(pkg = c("attachment", "tinytex", "usethis"), upgrade = TRUE)'
+        # - /bin/bash install_chrome.sh
+        - Rscript -e 'if (!file.exists("DESCRIPTION")) {usethis::use_description(check_name = FALSE)}'
+        - >
+          Rscript -e 'imports <- unique(c("bookdown", "knitr", "pagedown",
+            attachment::att_from_rmds(".", recursive = FALSE)));
+            if (packageVersion("attachment") <= "0.2.2") {
+              attachment::att_to_desc_from_is(path.d = "DESCRIPTION", imports = imports)
+              } else {attachment::att_to_desc_from_is(path.d = "DESCRIPTION", imports = imports, must.exist = FALSE)}'
+        - Rscript -e 'pak::local_install_deps(root = ".", upgrade = TRUE)'
+        - Rscript -e 'pak::local_install_dev_deps(root = ".", upgrade = TRUE)'
+        - Rscript -e 'if(!tinytex::is_tinytex()) tinytex::install_tinytex(force = TRUE)'
+        - mkdir -p public
+        - Rscript -e 'bookdown::render_book("index.Rmd", output_format = "bookdown::bs4_book", clean = FALSE, output_dir = "public")'
+        # - Rscript -e 'bookdown::render_book("index.Rmd", output_format = "bookdown::pdf_book", clean = FALSE, output_dir = "public")'
+        # - Rscript -e 'output_file <- bookdown::render_book("index.Rmd", output_format = "pagedown::html_paged", clean = FALSE);file.copy(output_file, "public/index.html")'
+        # - R -e 'pagedown::chrome_print("public/index.html", "public/rapport.pdf", extra_args = c("--no-sandbox", "--disable-gpu"), verbose = TRUE)'
+    artifacts:
+        paths:
+            - public
+        expire_in: 30 days
+
+gh-pages-prep:
+    stage: prepare-deploy
+    only:
+      - main
+      - master
+      - production
+      - validation
+    script:
+      # Use https://github.com/statnmap/GitLab-Pages-Deploy
+      # Deploy a unique site in gh-pages branch,
+      # or a sub-website for each branch if SITE_BY_BRANCH: "TRUE"
+      - wget https://raw.githubusercontent.com/statnmap/GitLab-Pages-Deploy/main/deploy_pages_branch.sh
+      - /bin/bash deploy_pages_branch.sh
+
+pages:
+    stage: deploy
+    script:
+        - echo "book deployment"
+    artifacts:
+        paths:
+            - public
+    only:
+        # Because we use "deploy_pages_branch", only gh-pages branch needs to be deployed
+        # All outputs from other branches in "prepare-deploy" step will push in "gh-pages"
+        - gh-pages

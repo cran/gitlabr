@@ -4,7 +4,7 @@
 \name{gitlabr-package}
 \alias{gitlabr}
 \alias{gitlabr-package}
-\title{gitlabr: Access to the 'Gitlab' API}
+\title{gitlabr: Access to the 'GitLab' API}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
@@ -13,17 +13,23 @@ Provides R functions to access the API of the project and repository management 
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://statnmap.github.io/gitlabr/}
-  \item Report bugs at \url{https://github.com/statnmap/gitlabr/issues}
+  \item \url{https://thinkr-open.github.io/gitlabr/}
+  \item \url{https://github.com/ThinkR-open/gitlabr}
+  \item Report bugs at \url{https://github.com/ThinkR-open/gitlabr/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Sébastien Rochette \email{sebastien@thinkr.fr} (\href{https://orcid.org/0000-0002-1565-9313}{ORCID})
+\strong{Maintainer}: Sébastien Rochette \email{sebastienrochettefr@gmail.com} (\href{https://orcid.org/0000-0002-1565-9313}{ORCID})
 
 Authors:
 \itemize{
   \item Jirka Lewandowski \email{jirka.lewandowski@wzb.eu}
+}
+
+Other contributors:
+\itemize{
+  \item ThinkR [copyright holder]
 }
 
 }
